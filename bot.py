@@ -1,5 +1,6 @@
 from config import BybitConfig
 from pybit.unified_trading import HTTP
+import urllib3
 
 
 def main() -> None:
@@ -12,6 +13,9 @@ def main() -> None:
     )
     if cfg.ignore_ssl:
         session.client.verify = False
+
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
     print("Fetching account balance...")
     try:
         result = session.get_wallet_balance(accountType="UNIFIED")
