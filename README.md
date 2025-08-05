@@ -1,2 +1,17 @@
 # o3cripto
-trade bot
+
+Simple Bybit futures trading bot example.
+
+## Setup
+
+1. Create a `.env` file based on `.env.example` and fill in your Bybit API credentials.
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Run the bot:
+   ```bash
+   python bot.py
+   ```
+
+This example fetches and prints account balance using Bybit's demo environment.
