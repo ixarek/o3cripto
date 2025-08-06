@@ -12,6 +12,9 @@ from bot import BybitTradingBot  # импорт класса из твоего �
 class TestBybitTradingBot(unittest.TestCase):
     def setUp(self):
         self.session = MagicMock()
+        self.session.get_tickers.return_value = {
+            "result": {"list": [{"lastPrice": "100"}]}
+        }
         self.bot = BybitTradingBot(self.session)
 
     def test_place_order_calls_api(self):
@@ -22,26 +25,29 @@ class TestBybitTradingBot(unittest.TestCase):
             buyLeverage="10",
             sellLeverage="10",
         )
-        self.session.place_order.assert_called_once_with(
-            category="linear",
-            symbol="BTCUSDT",
-            side="Buy",
-            orderType="Market",
-            qty="1000",
-            timeInForce="ImmediateOrCancel",
+        self.session.get_tickers.assert_called_once_with(
+            category="linear", symbol="BTCUSDT"
         )
+        self.session.place_order.assert_called_once()
+        _, kwargs = self.session.place_order.call_args
+        self.assertEqual(kwargs["category"], "linear")
+        self.assertEqual(kwargs["symbol"], "BTCUSDT")
+        self.assertEqual(kwargs["side"], "Buy")
+        self.assertEqual(kwargs["orderType"], "Market")
+        self.assertEqual(kwargs["timeInForce"], "ImmediateOrCancel")
+        self.assertAlmostEqual(float(kwargs["qty"]), 10.0)
 
     def test_close_position_calls_api(self):
         self.bot.close_position("BTCUSDT", "Buy", 100, 10)
-        self.session.place_order.assert_called_once_with(
-            category="linear",
-            symbol="BTCUSDT",
-            side="Sell",
-            orderType="Market",
-            qty="1000",
-            timeInForce="ImmediateOrCancel",
-            reduceOnly=True,
-        )
+        self.session.place_order.assert_called_once()
+        _, kwargs = self.session.place_order.call_args
+        self.assertEqual(kwargs["category"], "linear")
+        self.assertEqual(kwargs["symbol"], "BTCUSDT")
+        self.assertEqual(kwargs["side"], "Sell")
+        self.assertEqual(kwargs["orderType"], "Market")
+        self.assertEqual(kwargs["timeInForce"], "ImmediateOrCancel")
+        self.assertTrue(kwargs["reduceOnly"])
+        self.assertAlmostEqual(float(kwargs["qty"]), 10.0)
 
     def test_invalid_amount(self):
         with self.assertRaises(ValueError):
@@ -54,6 +60,10 @@ class TestBybitTradingBot(unittest.TestCase):
     def test_invalid_symbol(self):
         with self.assertRaises(ValueError):
             self.bot.place_order("ADAUSDT", "Buy", 100, 10)
+
+    def test_invalid_position_value(self):
+        with self.assertRaises(ValueError):
+            self.bot.place_order("BTCUSDT", "Buy", 120, 11)
 
     def test_log_market_trend_increase(self):
         candles = [[0, 0, 0, 0, "110", 0]] + [[0, 0, 0, 0, "100", 0]] * 49
