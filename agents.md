@@ -19,4 +19,28 @@ Request → POST https://api-demo.bybit.com/v5/position/set-leverage: {"category
 ERROR:__main__:BNBUSDT: trade failed: leverage not modified (ErrCode: 110043) (ErrTime: 07:38:04).
 Request → POST https://api-demo.bybit.com/v5/position/set-leverage: {"category": "linear", "symbol": "BNBUSDT", "buyLeverage": "10", "sellLeverage": "10"}.
 root@s921179:~/o3cripto#
-Необходимо найти причину и исправить. Запустить у себя bot.py и проверить работу.
+Необходимо найти причину и исправить. Запустить у себя bot.py и проверить работу. (пройдено)
+7. Сейчас получилось выставить позиции dogeusdt xrp usdt (но sl tp не стоят) также есть ошибки в bot.py
+   INFO:__main__:BTCUSDT: actively bought, price increases
+INFO:__main__:ETHUSDT: actively bought, price increases
+INFO:__main__:SOLUSDT: actively bought, price increases
+INFO:__main__:XRPUSDT: actively bought, price increases
+INFO:__main__:DOGEUSDT: actively bought, price increases
+INFO:__main__:BNBUSDT: actively bought, price increases
+INFO:__main__:BTCUSDT: leverage already set to 10
+ERROR:__main__:BTCUSDT: trade failed: The number of contracts exceeds maximum limit allowed: too large, order_qty:100000000000 > max_qty:11900000000 (ErrCode: 10001) (ErrTime: 07:56:17).
+Request → POST https://api-demo.bybit.com/v5/order/create: {"category": "linear", "symbol": "BTCUSDT", "side": "Buy", "orderType": "Market", "qty": "1000", "timeInForce": "ImmediateOrCancel"}.
+INFO:__main__:ETHUSDT: leverage already set to 10
+ERROR:__main__:ETHUSDT: trade failed: The number of contracts exceeds maximum limit allowed: too large, order_qty:100000000000 > max_qty:72400000000 (ErrCode: 10001) (ErrTime: 07:56:17).
+Request → POST https://api-demo.bybit.com/v5/order/create: {"category": "linear", "symbol": "ETHUSDT", "side": "Buy", "orderType": "Market", "qty": "1000", "timeInForce": "ImmediateOrCancel"}.
+INFO:__main__:SOLUSDT: leverage already set to 10
+ERROR:__main__:SOLUSDT: trade failed: ab not enough for new order (ErrCode: 110007) (ErrTime: 07:56:18).
+Request → POST https://api-demo.bybit.com/v5/order/create: {"category": "linear", "symbol": "SOLUSDT", "side": "Buy", "orderType": "Market", "qty": "1000", "timeInForce": "ImmediateOrCancel"}.
+INFO:__main__:XRPUSDT: leverage already set to 10
+INFO:__main__:XRPUSDT: order placed {'retCode': 0, 'retMsg': 'OK', 'result': {'orderId': 'bcfb4672-9ebf-484e-8ea4-308e09c595b5', 'orderLinkId': ''}, 'retExtInfo': {}, 'time': 1754466979110}
+INFO:__main__:DOGEUSDT: leverage already set to 10
+INFO:__main__:DOGEUSDT: order placed {'retCode': 0, 'retMsg': 'OK', 'result': {'orderId': '7af412fe-c77a-48d8-97f7-0b71626bee07', 'orderLinkId': ''}, 'retExtInfo': {}, 'time': 1754466980415}
+INFO:__main__:BNBUSDT: leverage already set to 10
+ERROR:__main__:BNBUSDT: trade failed: ab not enough for new order (ErrCode: 110007) (ErrTime: 07:56:21).
+Request → POST https://api-demo.bybit.com/v5/order/create: {"category": "linear", "symbol": "BNBUSDT", "side": "Buy", "orderType": "Market", "qty": "1000", "timeInForce": "ImmediateOrCancel"}.
+.
