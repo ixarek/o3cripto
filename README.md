@@ -15,3 +15,13 @@ Simple Bybit futures trading bot example.
    ```
 
 This example fetches and prints account balance using Bybit's demo environment.
+It also provides helpers for placing and closing leveraged market orders on
+`BTCUSDT`, `ETHUSDT`, `SOLUSDT`, `XRPUSDT`, `DOGEUSDT` and `BNBUSDT`.
+
+## Testing
+
+Run unit tests with:
+
+```bash
+python -m unittest tests.test_bot
+```
