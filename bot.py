@@ -30,6 +30,21 @@ class BybitTradingBot:
             raise ValueError("Amount must be between 80 and 120 USD")
         if not 10 <= leverage <= 20:
             raise ValueError("Leverage must be between 10 and 20")
+        notional = amount * leverage
+        if not 800 <= notional <= 1200:
+            raise ValueError("Position value must be between 800 and 1200 USD")
+
+    def _last_price(self, symbol: str) -> float:
+        """Return last traded price for symbol."""
+        result = self.session.get_tickers(category="linear", symbol=symbol)
+        price = (
+            result.get("result", {})
+            .get("list", [{}])[0]
+            .get("lastPrice")
+        )
+        if price is None:
+            raise ValueError(f"No price data for {symbol}")
+        return float(price)
 
     def _set_leverage(self, symbol: str, leverage: int) -> None:
         """Safely set leverage ignoring non-modification errors."""
@@ -50,7 +65,8 @@ class BybitTradingBot:
     def place_order(self, symbol: str, side: str, amount: float, leverage: int) -> dict:
         """Place a market order respecting risk limits."""
         self._validate(symbol, amount, leverage)
-        qty = amount * leverage
+        price = self._last_price(symbol)
+        qty = amount * leverage / price
         self._set_leverage(symbol, leverage)
         return self.session.place_order(
             category="linear",
@@ -66,7 +82,8 @@ class BybitTradingBot:
     ) -> dict:
         """Close an existing position by placing an opposite market order."""
         self._validate(symbol, amount, leverage)
-        qty = amount * leverage
+        price = self._last_price(symbol)
+        qty = amount * leverage / price
         close_side = "Sell" if side == "Buy" else "Buy"
         return self.session.place_order(
             category="linear",
