@@ -96,3 +96,33 @@ def test_half_year_strategy_buy_sell():
     signal, stop, take = half_year_strategy(candles)
     assert signal == "Sell"
     assert take < down_prices[-1] < stop
+
+
+
+def test_half_year_strategy_scaling():
+    prices = list(range(1, 260))
+    candles = _make_candles(prices)
+    signal, stop, take = half_year_strategy(candles, k=2)
+
+    highs = [c[2] for c in candles]
+    lows = [c[3] for c in candles]
+    closes = [c[4] for c in candles]
+
+    def _atr(high, low, close, period=14):
+        trs = []
+        for i in range(1, len(close)):
+            tr = max(
+                high[i] - low[i],
+                abs(high[i] - close[i - 1]),
+                abs(low[i] - close[i - 1]),
+            )
+            trs.append(tr)
+        return sum(trs[-period:]) / period
+
+    atr_val = _atr(highs, lows, closes) / 48
+    price = closes[-1]
+
+    assert signal == "Buy"
+    assert pytest.approx(price - stop, rel=1e-6) == atr_val
+    assert pytest.approx(take - price, rel=1e-6) == 2 * atr_val
+
