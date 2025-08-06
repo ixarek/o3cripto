@@ -167,17 +167,25 @@ class TestBybitTradingBot(unittest.TestCase):
     def test_combined_signal_hold_on_disagreement(self):
         self.bot.ma_crossover_signal = MagicMock(return_value="Buy")
         self.bot.rsi_signal = MagicMock(return_value="Sell")
-        signal = self.bot.combined_signal("BTCUSDT")
+        with self.assertLogs("bot", level="INFO") as cm:
+            signal, ma, rsi = self.bot.combined_signal("BTCUSDT")
         self.assertEqual(signal, "Hold")
+        self.assertEqual(ma, "Buy")
+        self.assertEqual(rsi, "Sell")
+        self.assertIn("MA=Buy, RSI=Sell -> Hold", cm.output[0])
 
     def test_combined_signal_agree_sell(self):
         self.bot.ma_crossover_signal = MagicMock(return_value="Sell")
         self.bot.rsi_signal = MagicMock(return_value="Sell")
-        signal = self.bot.combined_signal("BTCUSDT")
+        with self.assertLogs("bot", level="INFO") as cm:
+            signal, ma, rsi = self.bot.combined_signal("BTCUSDT")
         self.assertEqual(signal, "Sell")
+        self.assertEqual(ma, "Sell")
+        self.assertEqual(rsi, "Sell")
+        self.assertIn("MA=Sell, RSI=Sell -> Sell", cm.output[0])
 
     def test_trade_with_signals_calls_place_order(self):
-        self.bot.combined_signal = MagicMock(return_value="Buy")
+        self.bot.combined_signal = MagicMock(return_value=("Buy", "Buy", "Buy"))
         self.bot.place_order = MagicMock()
         self.bot._calculate_sl_tp = MagicMock(return_value=(90, 110))
         self.bot.trade_with_signals("BTCUSDT", 100, 10)
@@ -186,7 +194,7 @@ class TestBybitTradingBot(unittest.TestCase):
         )
 
     def test_trade_with_signals_no_signal(self):
-        self.bot.combined_signal = MagicMock(return_value="Hold")
+        self.bot.combined_signal = MagicMock(return_value=("Hold", "Buy", "Sell"))
         self.bot.place_order = MagicMock()
         with self.assertLogs("bot", level="INFO") as cm:
             result = self.bot.trade_with_signals("BTCUSDT", 100, 10)
