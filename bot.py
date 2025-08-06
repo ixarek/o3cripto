@@ -2,12 +2,28 @@ from config import BybitConfig
 from pybit.unified_trading import HTTP
 import urllib3
 import logging
+from pathlib import Path
 from typing import Optional
 from functools import lru_cache
 from decimal import Decimal
 
 
 logger = logging.getLogger(__name__)
+
+
+def setup_logging(log_file: str | Path = "trade_log.txt") -> None:
+    """Configure logging to console and append to a text file."""
+    log_path = Path(log_file)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler(log_path, mode="a", encoding="utf-8"),
+        ],
+        force=True,
+    )
 
 
 class BybitTradingBot:
@@ -226,8 +242,8 @@ def main() -> None:
         session.client.verify = False
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+    setup_logging()
     bot = BybitTradingBot(session)
-    logging.basicConfig(level=logging.INFO)
     print("Fetching account balance...")
     try:
         result = session.get_wallet_balance(accountType="UNIFIED")
