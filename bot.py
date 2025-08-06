@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 from functools import lru_cache
 from decimal import Decimal
+import time
 
 
 logger = logging.getLogger(__name__)
@@ -213,10 +214,45 @@ class BybitTradingBot:
             return "Sell"
         return "Hold"
 
-    def trade_with_ma(self, symbol: str, amount: float, leverage: int) -> Optional[dict]:
-        """Execute trade based on moving average crossover signal."""
+    def rsi_signal(self, symbol: str, period: int = 14) -> str:
+        """Return Buy/Sell/Hold based on RSI indicator."""
+        result = self.session.get_kline(
+            category="linear", symbol=symbol, interval=5, limit=period + 1
+        )
+        candles = result.get("result", {}).get("list", [])
+        if len(candles) < period + 1:
+            logger.warning(f"Not enough kline data for {symbol}")
+            return "Hold"
+        closes = [float(c[4]) for c in reversed(candles)]
+        gains = [max(closes[i] - closes[i - 1], 0) for i in range(1, len(closes))]
+        losses = [max(closes[i - 1] - closes[i], 0) for i in range(1, len(closes))]
+        avg_gain = sum(gains) / period
+        avg_loss = sum(losses) / period
+        if avg_loss == 0:
+            rsi = 100
+        else:
+            rs = avg_gain / avg_loss
+            rsi = 100 - 100 / (1 + rs)
+        if rsi < 30:
+            return "Buy"
+        if rsi > 70:
+            return "Sell"
+        return "Hold"
+
+    def combined_signal(self, symbol: str) -> str:
+        """Return unified trade signal if MA and RSI agree."""
+        ma = self.ma_crossover_signal(symbol)
+        rsi = self.rsi_signal(symbol)
+        if ma == rsi and ma != "Hold":
+            return ma
+        return "Hold"
+
+    def trade_with_signals(
+        self, symbol: str, amount: float, leverage: int
+    ) -> Optional[dict]:
+        """Execute trade only when multiple signals align."""
         self._validate(symbol, amount, leverage)
-        signal = self.ma_crossover_signal(symbol)
+        signal = self.combined_signal(symbol)
         if signal == "Hold":
             logger.info(f"{symbol}: no trade signal")
             return None
@@ -225,12 +261,17 @@ class BybitTradingBot:
             symbol, signal, amount, leverage, stop_loss, take_profit
         )
 
+    def trade_with_ma(
+        self, symbol: str, amount: float, leverage: int
+    ) -> Optional[dict]:  # pragma: no cover - backward compatibility
+        return self.trade_with_signals(symbol, amount, leverage)
+
     def log_all_trends(self) -> None:
         for symbol in self.ALLOWED_SYMBOLS:
             self.log_market_trend(symbol)
 
 
-def main() -> None:
+def main() -> None:  # pragma: no cover - side effects and infinite loop
     cfg = BybitConfig.from_env()
     session = HTTP(
         testnet=cfg.testnet,
@@ -251,16 +292,17 @@ def main() -> None:
         print(f"Failed to fetch balance: {exc}")
     else:
         print(result)
-    bot.log_all_trends()
-    for symbol in bot.ALLOWED_SYMBOLS:
-        try:
-            result = bot.trade_with_ma(symbol, 100, 10)
-            if result:
-                logger.info(f"{symbol}: order placed {result}")
-        except Exception as exc:
-            logger.error(f"{symbol}: trade failed: {exc}")
+    while True:
+        bot.log_all_trends()
+        for symbol in bot.ALLOWED_SYMBOLS:
+            try:
+                result = bot.trade_with_signals(symbol, 100, 10)
+                if result:
+                    logger.info(f"{symbol}: order placed {result}")
+            except Exception as exc:
+                logger.error(f"{symbol}: trade failed: {exc}")
+        time.sleep(60)
 
 
-
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover - script entry point
     main()

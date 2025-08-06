@@ -99,21 +99,100 @@ class TestBybitTradingBot(unittest.TestCase):
         )
         self.assertIn("BTCUSDT: actively sold, price decreases", cm.output[0])
 
+    def test_log_market_trend_no_data(self):
+        self.session.get_kline.return_value = {"result": {"list": []}}
+        with self.assertLogs("bot", level="WARNING") as cm:
+            self.bot.log_market_trend("BTCUSDT")
+        self.assertIn("No kline data", cm.output[0])
+
+    def test_log_market_trend_stable(self):
+        candles = [[0, 0, 0, 0, "100", 0]] * 50
+        self.session.get_kline.return_value = {"result": {"list": candles}}
+        with self.assertLogs("bot", level="INFO") as cm:
+            self.bot.log_market_trend("BTCUSDT")
+        self.assertIn("stable, price unchanged", cm.output[0])
+
     def test_ma_crossover_signal_buy(self):
         candles = [[0, 0, 0, 0, "110", 0]] * 5 + [[0, 0, 0, 0, "100", 0]] * 45
         self.session.get_kline.return_value = {"result": {"list": candles}}
         signal = self.bot.ma_crossover_signal("BTCUSDT")
         self.assertEqual(signal, "Buy")
 
-    def test_trade_with_ma_calls_place_order(self):
-        candles = [[0, 0, 0, 0, "110", 0]] * 5 + [[0, 0, 0, 0, "100", 0]] * 45
+    def test_ma_crossover_signal_sell(self):
+        closes = [100] * 45 + [90] * 5
+        candles = [[0, 0, 0, 0, str(p), 0] for p in reversed(closes)]
         self.session.get_kline.return_value = {"result": {"list": candles}}
+        signal = self.bot.ma_crossover_signal("BTCUSDT")
+        self.assertEqual(signal, "Sell")
+
+    def test_ma_crossover_signal_hold(self):
+        candles = [[0, 0, 0, 0, "100", 0]] * 50
+        self.session.get_kline.return_value = {"result": {"list": candles}}
+        signal = self.bot.ma_crossover_signal("BTCUSDT")
+        self.assertEqual(signal, "Hold")
+
+    def test_ma_crossover_signal_not_enough_data(self):
+        self.session.get_kline.return_value = {"result": {"list": [[0, 0, 0, 0, "100", 0]] * 10}}
+        with self.assertLogs("bot", level="WARNING") as cm:
+            signal = self.bot.ma_crossover_signal("BTCUSDT")
+        self.assertIn("Not enough kline data", cm.output[0])
+        self.assertEqual(signal, "Hold")
+
+    def test_rsi_signal_buy(self):
+        candles = [[0, 0, 0, 0, str(p), 0] for p in range(86, 101)]
+        self.session.get_kline.return_value = {"result": {"list": candles}}
+        signal = self.bot.rsi_signal("BTCUSDT")
+        self.assertEqual(signal, "Buy")
+
+    def test_rsi_signal_sell(self):
+        candles = [[0, 0, 0, 0, str(p), 0] for p in range(100, 85, -1)]
+        self.session.get_kline.return_value = {"result": {"list": candles}}
+        signal = self.bot.rsi_signal("BTCUSDT")
+        self.assertEqual(signal, "Sell")
+
+    def test_rsi_signal_hold_value(self):
+        closes = [100, 101] * 7 + [100]
+        candles = [[0, 0, 0, 0, str(p), 0] for p in reversed(closes)]
+        self.session.get_kline.return_value = {"result": {"list": candles}}
+        signal = self.bot.rsi_signal("BTCUSDT")
+        self.assertEqual(signal, "Hold")
+
+    def test_rsi_signal_not_enough_data(self):
+        self.session.get_kline.return_value = {"result": {"list": [[0, 0, 0, 0, "100", 0]] * 10}}
+        with self.assertLogs("bot", level="WARNING") as cm:
+            signal = self.bot.rsi_signal("BTCUSDT")
+        self.assertIn("Not enough kline data", cm.output[0])
+        self.assertEqual(signal, "Hold")
+
+    def test_combined_signal_hold_on_disagreement(self):
+        self.bot.ma_crossover_signal = MagicMock(return_value="Buy")
+        self.bot.rsi_signal = MagicMock(return_value="Sell")
+        signal = self.bot.combined_signal("BTCUSDT")
+        self.assertEqual(signal, "Hold")
+
+    def test_combined_signal_agree_sell(self):
+        self.bot.ma_crossover_signal = MagicMock(return_value="Sell")
+        self.bot.rsi_signal = MagicMock(return_value="Sell")
+        signal = self.bot.combined_signal("BTCUSDT")
+        self.assertEqual(signal, "Sell")
+
+    def test_trade_with_signals_calls_place_order(self):
+        self.bot.combined_signal = MagicMock(return_value="Buy")
         self.bot.place_order = MagicMock()
         self.bot._calculate_sl_tp = MagicMock(return_value=(90, 110))
-        self.bot.trade_with_ma("BTCUSDT", 100, 10)
+        self.bot.trade_with_signals("BTCUSDT", 100, 10)
         self.bot.place_order.assert_called_once_with(
             "BTCUSDT", "Buy", 100, 10, 90, 110
         )
+
+    def test_trade_with_signals_no_signal(self):
+        self.bot.combined_signal = MagicMock(return_value="Hold")
+        self.bot.place_order = MagicMock()
+        with self.assertLogs("bot", level="INFO") as cm:
+            result = self.bot.trade_with_signals("BTCUSDT", 100, 10)
+        self.assertIsNone(result)
+        self.bot.place_order.assert_not_called()
+        self.assertIn("no trade signal", cm.output[0])
 
     def test_place_order_ignores_leverage_error(self):
         self.session.set_leverage.side_effect = Exception(
@@ -130,11 +209,59 @@ class TestBybitTradingBot(unittest.TestCase):
         _, kwargs = self.session.place_order.call_args
         self.assertEqual(kwargs["qty"], "0.008")
 
+    def test_format_qty_uses_minimum(self):
+        qty = self.bot._format_qty("BTCUSDT", 0.0004)
+        self.assertEqual(qty, 0.001)
+
     def test_place_order_requires_sl_tp(self):
         with self.assertRaises(ValueError):
             self.bot.place_order("BTCUSDT", "Buy", 100, 10, None, 105)
         with self.assertRaises(ValueError):
             self.bot.place_order("BTCUSDT", "Buy", 100, 10, 95, None)
+
+    def test_place_order_invalid_sl_tp_buy(self):
+        with self.assertRaises(ValueError):
+            self.bot.place_order("BTCUSDT", "Buy", 100, 10, 105, 95)
+
+    def test_place_order_invalid_sl_tp_sell(self):
+        with self.assertRaises(ValueError):
+            self.bot.place_order("BTCUSDT", "Sell", 100, 10, 95, 105)
+
+    def test_last_price_no_data(self):
+        self.session.get_tickers.return_value = {"result": {"list": [{}]}}
+        with self.assertRaises(ValueError):
+            self.bot._last_price("BTCUSDT")
+
+    def test_calculate_sl_tp_buy(self):
+        self.session.get_kline.side_effect = [
+            {"result": {"list": [[0, 0, 0, 0, "90", 0], [0, 0, 0, 0, "100", 0]]}},
+            {"result": {"list": [[0, 0, 0, 0, "95", 0], [0, 0, 0, 0, "100", 0]]}},
+        ]
+        self.session.get_tickers.return_value = {"result": {"list": [{"lastPrice": "96"}]}}
+        stop, take = self.bot._calculate_sl_tp("BTCUSDT", "Buy")
+        self.assertLess(stop, 96)
+        self.assertGreater(take, 96)
+
+    def test_calculate_sl_tp_sell(self):
+        self.session.get_kline.side_effect = [
+            {"result": {"list": [[0, 0, 0, 0, "90", 0], [0, 0, 0, 0, "100", 0]]}},
+            {"result": {"list": [[0, 0, 0, 0, "100", 0], [0, 0, 0, 0, "95", 0]]}},
+        ]
+        self.session.get_tickers.return_value = {"result": {"list": [{"lastPrice": "96"}]}}
+        stop, take = self.bot._calculate_sl_tp("BTCUSDT", "Sell")
+        self.assertGreater(stop, take)
+
+    def test_calculate_sl_tp_no_data(self):
+        self.session.get_kline.return_value = {"result": {"list": []}}
+        with self.assertRaises(ValueError):
+            self.bot._calculate_sl_tp("BTCUSDT", "Buy")
+
+    def test_log_all_trends_invokes_log_market_trend(self):
+        self.bot.log_market_trend = MagicMock()
+        self.bot.log_all_trends()
+        self.assertEqual(
+            self.bot.log_market_trend.call_count, len(self.bot.ALLOWED_SYMBOLS)
+        )
 
     def test_setup_logging_writes_to_file(self):
         with tempfile.TemporaryDirectory() as tmpdir:
