@@ -55,6 +55,26 @@ class TestBybitTradingBot(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.bot.place_order("ADAUSDT", "Buy", 100, 10)
 
+    def test_log_market_trend_increase(self):
+        candles = [[0, 0, 0, 0, "110", 0]] + [[0, 0, 0, 0, "100", 0]] * 49
+        self.session.get_kline.return_value = {"result": {"list": candles}}
+        with self.assertLogs("bot", level="INFO") as cm:
+            self.bot.log_market_trend("BTCUSDT")
+        self.session.get_kline.assert_called_once_with(
+            category="linear", symbol="BTCUSDT", interval=5, limit=50
+        )
+        self.assertIn("BTCUSDT: actively bought, price increases", cm.output[0])
+
+    def test_log_market_trend_decrease(self):
+        candles = [[0, 0, 0, 0, "90", 0]] + [[0, 0, 0, 0, "100", 0]] * 49
+        self.session.get_kline.return_value = {"result": {"list": candles}}
+        with self.assertLogs("bot", level="INFO") as cm:
+            self.bot.log_market_trend("BTCUSDT")
+        self.session.get_kline.assert_called_once_with(
+            category="linear", symbol="BTCUSDT", interval=5, limit=50
+        )
+        self.assertIn("BTCUSDT: actively sold, price decreases", cm.output[0])
+
 
 if __name__ == "__main__":
     unittest.main()

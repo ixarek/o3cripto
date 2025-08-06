@@ -1,6 +1,10 @@
 from config import BybitConfig
 from pybit.unified_trading import HTTP
 import urllib3
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class BybitTradingBot:
@@ -62,6 +66,28 @@ class BybitTradingBot:
             reduceOnly=True,
         )
 
+    def log_market_trend(self, symbol: str) -> None:
+        """Fetch last 50 five-minute candles and log price direction."""
+        result = self.session.get_kline(
+            category="linear", symbol=symbol, interval=5, limit=50
+        )
+        candles = result.get("result", {}).get("list", [])
+        if not candles:
+            logger.warning(f"No kline data for {symbol}")
+            return
+        closes = [float(c[4]) for c in reversed(candles)]
+        if closes[-1] > closes[0]:
+            trend = "actively bought, price increases"
+        elif closes[-1] < closes[0]:
+            trend = "actively sold, price decreases"
+        else:
+            trend = "stable, price unchanged"
+        logger.info(f"{symbol}: {trend}")
+
+    def log_all_trends(self) -> None:
+        for symbol in self.ALLOWED_SYMBOLS:
+            self.log_market_trend(symbol)
+
 
 def main() -> None:
     cfg = BybitConfig.from_env()
@@ -76,6 +102,7 @@ def main() -> None:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     bot = BybitTradingBot(session)
+    logging.basicConfig(level=logging.INFO)
     print("Fetching account balance...")
     try:
         result = session.get_wallet_balance(accountType="UNIFIED")
@@ -83,6 +110,7 @@ def main() -> None:
         print(f"Failed to fetch balance: {exc}")
     else:
         print(result)
+    bot.log_all_trends()
     # Example usage (requires valid API keys):
     # bot.place_order("BTCUSDT", "Buy", 100, 10)
     # bot.close_position("BTCUSDT", "Buy", 100, 10)
