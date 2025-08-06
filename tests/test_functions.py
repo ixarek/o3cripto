@@ -16,6 +16,7 @@ from functions import (
     cache_candles,
     log_performance_metrics,
     breakout,
+    half_year_strategy,
 )
 
 def test_calculate_dynamic_order_size():
@@ -77,3 +78,21 @@ def test_log_performance_metrics(tmp_path):
     content = log_file.read_text()
     assert "api_latency=0.100s" in content
     assert "strategy_time=0.200s" in content
+
+
+def _make_candles(prices):
+    return [[0, p, p + 1, p - 1, p, 0] for p in prices]
+
+
+def test_half_year_strategy_buy_sell():
+    up_prices = list(range(1, 260))
+    candles = _make_candles(up_prices)
+    signal, stop, take = half_year_strategy(candles)
+    assert signal == "Buy"
+    assert stop < up_prices[-1] < take
+
+    down_prices = list(range(260, 0, -1))
+    candles = _make_candles(down_prices)
+    signal, stop, take = half_year_strategy(candles)
+    assert signal == "Sell"
+    assert take < down_prices[-1] < stop
