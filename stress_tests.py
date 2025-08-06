@@ -49,8 +49,16 @@ def run_crash_scenario(symbol: str, start: str, end: str):
     cerebro.addstrategy(SmaCross)
     datafeed = bt.feeds.PandasData(dataname=data)
     cerebro.adddata(datafeed)
+
     start_cash = 10000
     cerebro.broker.setcash(start_cash)
+
+    # Автоматически подбираем размер позиции, чтобы тесты работали
+    # даже для дорогих активов вроде BTC: покупаем долю, на которую
+    # хватает стартового капитала.
+    max_price = float(data['Close'].max())
+    stake = max(start_cash / max_price, 0.001)
+    cerebro.addsizer(bt.sizers.FixedSize, stake=stake)
     cerebro.addanalyzer(bt.analyzers.DrawDown, _name='dd')
     result = cerebro.run()[0]
     final_value = cerebro.broker.getvalue()
