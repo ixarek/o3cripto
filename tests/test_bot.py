@@ -15,6 +15,13 @@ class TestBybitTradingBot(unittest.TestCase):
         self.session.get_tickers.return_value = {
             "result": {"list": [{"lastPrice": "100"}]}
         }
+        self.session.get_instruments_info.return_value = {
+            "result": {
+                "list": [
+                    {"lotSizeFilter": {"qtyStep": "0.001", "minOrderQty": "0.001"}}
+                ]
+            }
+        }
         self.bot = BybitTradingBot(self.session)
 
     def test_place_order_calls_api(self):
@@ -26,6 +33,9 @@ class TestBybitTradingBot(unittest.TestCase):
             sellLeverage="10",
         )
         self.session.get_tickers.assert_called_once_with(
+            category="linear", symbol="BTCUSDT"
+        )
+        self.session.get_instruments_info.assert_called_once_with(
             category="linear", symbol="BTCUSDT"
         )
         self.session.place_order.assert_called_once()
@@ -104,6 +114,14 @@ class TestBybitTradingBot(unittest.TestCase):
         )
         self.bot.place_order("BTCUSDT", "Buy", 100, 10)
         self.session.place_order.assert_called_once()
+
+    def test_qty_is_rounded_to_step(self):
+        self.session.get_tickers.return_value = {
+            "result": {"list": [{"lastPrice": "114000"}]}
+        }
+        self.bot.place_order("BTCUSDT", "Buy", 100, 10)
+        _, kwargs = self.session.place_order.call_args
+        self.assertEqual(kwargs["qty"], "0.008")
 
 
 if __name__ == "__main__":

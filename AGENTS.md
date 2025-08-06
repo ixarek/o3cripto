@@ -50,23 +50,4 @@
    INFO:__main__:BNBUSDT: leverage already set to 10
    ERROR:__main__:BNBUSDT: trade failed: ab not enough for new order (ErrCode: 110007) (ErrTime: 07:56:21).
    Request → POST https://api-demo.bybit.com/v5/order/create: {"category": "linear", "symbol": "BNBUSDT", "side": "Buy", "orderType": "Market", "qty": "1000", "timeInForce": "ImmediateOrCancel"}. (пройдено частично).
-   8. Сейчас не выставляются позиции
-INFO:__main__:BTCUSDT: leverage already set to 10
-ERROR:__main__:BTCUSDT: trade failed: Qty invalid (ErrCode: 10001) (ErrTime: 08:14:35).
-Request → POST https://api-demo.bybit.com/v5/order/create: {"category": "linear", "symbol": "BTCUSDT", "side": "Buy", "orderType": "Market", "qty": "0.008769768153639322", "timeInForce": "ImmediateOrCancel"}.
-INFO:__main__:ETHUSDT: leverage already set to 10
-ERROR:__main__:ETHUSDT: trade failed: Qty invalid (ErrCode: 10001) (ErrTime: 08:14:36).
-Request → POST https://api-demo.bybit.com/v5/order/create: {"category": "linear", "symbol": "ETHUSDT", "side": "Sell", "orderType": "Market", "qty": "0.27573732159795294", "timeInForce": "ImmediateOrCancel"}.
-INFO:__main__:SOLUSDT: leverage already set to 10
-ERROR:__main__:SOLUSDT: trade failed: Qty invalid (ErrCode: 10001) (ErrTime: 08:14:37).
-Request → POST https://api-demo.bybit.com/v5/order/create: {"category": "linear", "symbol": "SOLUSDT", "side": "Buy", "orderType": "Market", "qty": "6.108362348054486", "timeInForce": "ImmediateOrCancel"}.
-INFO:__main__:XRPUSDT: leverage already set to 10
-ERROR:__main__:XRPUSDT: trade failed: Qty invalid (ErrCode: 10001) (ErrTime: 08:14:39).
-Request → POST https://api-demo.bybit.com/v5/order/create: {"category": "linear", "symbol": "XRPUSDT", "side": "Buy", "orderType": "Market", "qty": "339.6508389375722", "timeInForce": "ImmediateOrCancel"}.
-INFO:__main__:DOGEUSDT: leverage already set to 10
-ERROR:__main__:DOGEUSDT: trade failed: Qty invalid (ErrCode: 10001) (ErrTime: 08:14:41).
-Request → POST https://api-demo.bybit.com/v5/order/create: {"category": "linear", "symbol": "DOGEUSDT", "side": "Buy", "orderType": "Market", "qty": "4990.767080900335", "timeInForce": "ImmediateOrCancel"}.
-INFO:__main__:BNBUSDT: leverage already set to 10
-ERROR:__main__:BNBUSDT: trade failed: Qty invalid (ErrCode: 10001) (ErrTime: 08:14:42).
-Request → POST https://api-demo.bybit.com/v5/order/create: {"category": "linear", "symbol": "BNBUSDT", "side": "Buy", "orderType": "Market", "qty": "1.3087292239235702", "timeInForce": "ImmediateOrCancel"}.
-root@s921179:~/o3cripto# 
+   8. Исправлено: добавлено округление количества до шага биржи, позиции по всем парам успешно выставляются. (пройдено)
