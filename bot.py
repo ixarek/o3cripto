@@ -88,10 +88,48 @@ class BybitTradingBot:
             else:
                 raise
 
-    def place_order(self, symbol: str, side: str, amount: float, leverage: int) -> dict:
+    def _calculate_sl_tp(self, symbol: str, side: str) -> tuple[float, float]:
+        """Determine stop-loss and take-profit using support/resistance and trend."""
+        long = self.session.get_kline(
+            category="linear", symbol=symbol, interval=15, limit=50
+        )
+        short = self.session.get_kline(
+            category="linear", symbol=symbol, interval=5, limit=50
+        )
+        long_c = [float(c[4]) for c in long.get("result", {}).get("list", [])]
+        short_c = [float(c[4]) for c in short.get("result", {}).get("list", [])]
+        if not long_c or not short_c:
+            raise ValueError(f"No kline data for {symbol}")
+        support = min(long_c)
+        resistance = max(long_c)
+        trend_up = short_c[-1] >= short_c[0]
+        price = self._last_price(symbol)
+        if side == "Buy":
+            stop = min(support, price * 0.99)
+            take = max(resistance, price * (1.02 if trend_up else 1.01))
+        else:
+            stop = max(resistance, price * 1.01)
+            take = min(support, price * (0.98 if trend_up else 0.99))
+        return stop, take
+
+    def place_order(
+        self,
+        symbol: str,
+        side: str,
+        amount: float,
+        leverage: int,
+        stop_loss: float,
+        take_profit: float,
+    ) -> dict:
         """Place a market order respecting risk limits."""
+        if stop_loss is None or take_profit is None:
+            raise ValueError("Stop loss and take profit required")
         self._validate(symbol, amount, leverage)
         price = self._last_price(symbol)
+        if side == "Buy" and not (stop_loss < price < take_profit):
+            raise ValueError("Invalid SL/TP levels")
+        if side == "Sell" and not (take_profit < price < stop_loss):
+            raise ValueError("Invalid SL/TP levels")
         qty = self._format_qty(symbol, amount * leverage / price)
         self._set_leverage(symbol, leverage)
         return self.session.place_order(
@@ -101,6 +139,8 @@ class BybitTradingBot:
             orderType="Market",
             qty=str(qty),
             timeInForce="ImmediateOrCancel",
+            stopLoss=str(stop_loss),
+            takeProfit=str(take_profit),
         )
 
     def close_position(
@@ -164,7 +204,10 @@ class BybitTradingBot:
         if signal == "Hold":
             logger.info(f"{symbol}: no trade signal")
             return None
-        return self.place_order(symbol, signal, amount, leverage)
+        stop_loss, take_profit = self._calculate_sl_tp(symbol, signal)
+        return self.place_order(
+            symbol, signal, amount, leverage, stop_loss, take_profit
+        )
 
     def log_all_trends(self) -> None:
         for symbol in self.ALLOWED_SYMBOLS:

@@ -25,7 +25,7 @@ class TestBybitTradingBot(unittest.TestCase):
         self.bot = BybitTradingBot(self.session)
 
     def test_place_order_calls_api(self):
-        self.bot.place_order("BTCUSDT", "Buy", 100, 10)
+        self.bot.place_order("BTCUSDT", "Buy", 100, 10, 95, 105)
         self.session.set_leverage.assert_called_once_with(
             category="linear",
             symbol="BTCUSDT",
@@ -45,6 +45,8 @@ class TestBybitTradingBot(unittest.TestCase):
         self.assertEqual(kwargs["side"], "Buy")
         self.assertEqual(kwargs["orderType"], "Market")
         self.assertEqual(kwargs["timeInForce"], "ImmediateOrCancel")
+        self.assertEqual(kwargs["stopLoss"], "95")
+        self.assertEqual(kwargs["takeProfit"], "105")
         self.assertAlmostEqual(float(kwargs["qty"]), 10.0)
 
     def test_close_position_calls_api(self):
@@ -61,19 +63,19 @@ class TestBybitTradingBot(unittest.TestCase):
 
     def test_invalid_amount(self):
         with self.assertRaises(ValueError):
-            self.bot.place_order("BTCUSDT", "Buy", 70, 10)
+            self.bot.place_order("BTCUSDT", "Buy", 70, 10, 95, 105)
 
     def test_invalid_leverage(self):
         with self.assertRaises(ValueError):
-            self.bot.place_order("BTCUSDT", "Buy", 100, 5)
+            self.bot.place_order("BTCUSDT", "Buy", 100, 5, 95, 105)
 
     def test_invalid_symbol(self):
         with self.assertRaises(ValueError):
-            self.bot.place_order("ADAUSDT", "Buy", 100, 10)
+            self.bot.place_order("ADAUSDT", "Buy", 100, 10, 95, 105)
 
     def test_invalid_position_value(self):
         with self.assertRaises(ValueError):
-            self.bot.place_order("BTCUSDT", "Buy", 120, 11)
+            self.bot.place_order("BTCUSDT", "Buy", 120, 11, 95, 105)
 
     def test_log_market_trend_increase(self):
         candles = [[0, 0, 0, 0, "110", 0]] + [[0, 0, 0, 0, "100", 0]] * 49
@@ -105,23 +107,32 @@ class TestBybitTradingBot(unittest.TestCase):
         candles = [[0, 0, 0, 0, "110", 0]] * 5 + [[0, 0, 0, 0, "100", 0]] * 45
         self.session.get_kline.return_value = {"result": {"list": candles}}
         self.bot.place_order = MagicMock()
+        self.bot._calculate_sl_tp = MagicMock(return_value=(90, 110))
         self.bot.trade_with_ma("BTCUSDT", 100, 10)
-        self.bot.place_order.assert_called_once_with("BTCUSDT", "Buy", 100, 10)
+        self.bot.place_order.assert_called_once_with(
+            "BTCUSDT", "Buy", 100, 10, 90, 110
+        )
 
     def test_place_order_ignores_leverage_error(self):
         self.session.set_leverage.side_effect = Exception(
             "leverage not modified (ErrCode: 110043)"
         )
-        self.bot.place_order("BTCUSDT", "Buy", 100, 10)
+        self.bot.place_order("BTCUSDT", "Buy", 100, 10, 95, 105)
         self.session.place_order.assert_called_once()
 
     def test_qty_is_rounded_to_step(self):
         self.session.get_tickers.return_value = {
             "result": {"list": [{"lastPrice": "114000"}]}
         }
-        self.bot.place_order("BTCUSDT", "Buy", 100, 10)
+        self.bot.place_order("BTCUSDT", "Buy", 100, 10, 95000, 120000)
         _, kwargs = self.session.place_order.call_args
         self.assertEqual(kwargs["qty"], "0.008")
+
+    def test_place_order_requires_sl_tp(self):
+        with self.assertRaises(ValueError):
+            self.bot.place_order("BTCUSDT", "Buy", 100, 10, None, 105)
+        with self.assertRaises(ValueError):
+            self.bot.place_order("BTCUSDT", "Buy", 100, 10, 95, None)
 
 
 if __name__ == "__main__":
