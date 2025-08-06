@@ -1,27 +1,39 @@
 # o3cripto
 
-Simple Bybit futures trading bot example.
+Простой пример торгового бота для фьючерсов Bybit.
 
-## Setup
+## Установка
 
-1. Create a `.env` file based on `.env.example` and fill in your Bybit API credentials.
-2. Install dependencies:
+1. Создайте файл `.env` на основе `.env.example` и заполните его своими API‑ключами Bybit.
+2. Установите зависимости:
    ```bash
    pip install -r requirements.txt
    ```
-3. Run the bot:
+3. Запустите бота:
    ```bash
    python bot.py
    ```
 
-This example fetches and prints account balance using Bybit's demo environment.
-It also provides helpers for placing and closing leveraged market orders on
-`BTCUSDT`, `ETHUSDT`, `SOLUSDT`, `XRPUSDT`, `DOGEUSDT` and `BNBUSDT`.
+Пример получает и выводит баланс счёта в тестовой среде Bybit.
+Также он содержит вспомогательные функции для открытия и закрытия рыночных ордеров с плечом на парах
+`BTCUSDT`, `ETHUSDT`, `SOLUSDT`, `XRPUSDT`, `DOGEUSDT` и `BNBUSDT`.
 
-## Testing
+## Торговые стратегии
 
-Run unit tests with:
+В бота встроен пример стратегии пересечения скользящих средних через функцию
+`trade_with_ma`, которая торгует, когда 5‑периодная SMA пересекает 20‑периодную SMA.
+Для автономной работы в 2025 году можно расширить бота следующими методами:
 
+- **Прогнозирование с подкреплением**, обученное на данных ордербука.
+- **Статистический арбитраж** на коррелированных парах для поиска неправильного ценообразования.
+- **Системы пробоя волатильности** с динамическим управлением рисками.
+- **Анализ настроений** из новостей и социальных сетей для фильтрации сделок.
 
+## Тестирование
+
+Запустить модульные тесты:
+
+```bash
 python -m unittest tests.test_bot
+```
 

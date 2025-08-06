@@ -75,6 +75,19 @@ class TestBybitTradingBot(unittest.TestCase):
         )
         self.assertIn("BTCUSDT: actively sold, price decreases", cm.output[0])
 
+    def test_ma_crossover_signal_buy(self):
+        candles = [[0, 0, 0, 0, "110", 0]] * 5 + [[0, 0, 0, 0, "100", 0]] * 45
+        self.session.get_kline.return_value = {"result": {"list": candles}}
+        signal = self.bot.ma_crossover_signal("BTCUSDT")
+        self.assertEqual(signal, "Buy")
+
+    def test_trade_with_ma_calls_place_order(self):
+        candles = [[0, 0, 0, 0, "110", 0]] * 5 + [[0, 0, 0, 0, "100", 0]] * 45
+        self.session.get_kline.return_value = {"result": {"list": candles}}
+        self.bot.place_order = MagicMock()
+        self.bot.trade_with_ma("BTCUSDT", 100, 10)
+        self.bot.place_order.assert_called_once_with("BTCUSDT", "Buy", 100, 10)
+
 
 if __name__ == "__main__":
     unittest.main()
