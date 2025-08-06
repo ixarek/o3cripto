@@ -148,6 +148,9 @@ class BybitTradingBot:
         if side == "Sell" and not (take_profit < price < stop_loss):
             raise ValueError("Invalid SL/TP levels")
         qty = self._format_qty(symbol, amount * leverage / price)
+        logger.info(
+            f"{symbol}: place {side} qty={qty} price={price:.2f} SL={stop_loss:.2f} TP={take_profit:.2f} lev={leverage}"
+        )
         self._set_leverage(symbol, leverage)
         return self.session.place_order(
             category="linear",
@@ -188,13 +191,16 @@ class BybitTradingBot:
             logger.warning(f"No kline data for {symbol}")
             return
         closes = [float(c[4]) for c in reversed(candles)]
-        if closes[-1] > closes[0]:
+        start, end = closes[0], closes[-1]
+        if end > start:
             trend = "actively bought, price increases"
-        elif closes[-1] < closes[0]:
+        elif end < start:
             trend = "actively sold, price decreases"
         else:
             trend = "stable, price unchanged"
-        logger.info(f"{symbol}: {trend}")
+        logger.info(
+            f"{symbol}: {trend} (start={start:.2f}, end={end:.2f})"
+        )
 
     def ma_crossover_signal(self, symbol: str) -> str:
         """Return Buy/Sell/Hold using a 5/20 SMA crossover."""
@@ -209,10 +215,15 @@ class BybitTradingBot:
         short_sma = sum(closes[-5:]) / 5
         long_sma = sum(closes[-20:]) / 20
         if short_sma > long_sma:
-            return "Buy"
-        if short_sma < long_sma:
-            return "Sell"
-        return "Hold"
+            signal = "Buy"
+        elif short_sma < long_sma:
+            signal = "Sell"
+        else:
+            signal = "Hold"
+        logger.info(
+            f"{symbol}: SMA5={short_sma:.2f} SMA20={long_sma:.2f} -> {signal}"
+        )
+        return signal
 
     def rsi_signal(self, symbol: str, period: int = 14) -> str:
         """Return Buy/Sell/Hold based on RSI indicator."""
@@ -234,29 +245,35 @@ class BybitTradingBot:
             rs = avg_gain / avg_loss
             rsi = 100 - 100 / (1 + rs)
         if rsi < 30:
-            return "Buy"
-        if rsi > 70:
-            return "Sell"
-        return "Hold"
+            signal = "Buy"
+        elif rsi > 70:
+            signal = "Sell"
+        else:
+            signal = "Hold"
+        logger.info(f"{symbol}: RSI={rsi:.2f} -> {signal}")
+        return signal
 
-    def combined_signal(self, symbol: str) -> str:
-        """Return unified trade signal if MA and RSI agree."""
+    def combined_signal(self, symbol: str) -> tuple[str, str, str]:
+        """Return unified trade signal alongside MA and RSI signals."""
         ma = self.ma_crossover_signal(symbol)
         rsi = self.rsi_signal(symbol)
-        if ma == rsi and ma != "Hold":
-            return ma
-        return "Hold"
+        signal = ma if ma == rsi and ma != "Hold" else "Hold"
+        logger.info(f"{symbol}: signals MA={ma}, RSI={rsi} -> {signal}")
+        return signal, ma, rsi
 
     def trade_with_signals(
         self, symbol: str, amount: float, leverage: int
     ) -> Optional[dict]:
         """Execute trade only when multiple signals align."""
         self._validate(symbol, amount, leverage)
-        signal = self.combined_signal(symbol)
+        signal, ma, rsi = self.combined_signal(symbol)
         if signal == "Hold":
-            logger.info(f"{symbol}: no trade signal")
+            logger.info(f"{symbol}: no trade signal (MA={ma}, RSI={rsi})")
             return None
         stop_loss, take_profit = self._calculate_sl_tp(symbol, signal)
+        logger.info(
+            f"{symbol}: signal={signal} amount={amount} lev={leverage} SL={stop_loss:.2f} TP={take_profit:.2f}"
+        )
         return self.place_order(
             symbol, signal, amount, leverage, stop_loss, take_profit
         )
