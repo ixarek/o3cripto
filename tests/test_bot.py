@@ -2,11 +2,13 @@ import sys
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock
+import logging
+import tempfile
 
 # Добавляем путь к родительской папке, чтобы импортировать bot.py
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from bot import BybitTradingBot  # импорт класса из твоего основного бота
+from bot import BybitTradingBot, setup_logging, logger  # импорт бота и логгера
 
 
 class TestBybitTradingBot(unittest.TestCase):
@@ -133,6 +135,19 @@ class TestBybitTradingBot(unittest.TestCase):
             self.bot.place_order("BTCUSDT", "Buy", 100, 10, None, 105)
         with self.assertRaises(ValueError):
             self.bot.place_order("BTCUSDT", "Buy", 100, 10, 95, None)
+
+    def test_setup_logging_writes_to_file(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / "log.txt"
+            setup_logging(log_path)
+            logger.info("file logging works")
+            root_logger = logging.getLogger()
+            for handler in root_logger.handlers:
+                handler.flush()
+                handler.close()
+            content = log_path.read_text(encoding="utf-8")
+            self.assertIn("file logging works", content)
+            root_logger.handlers.clear()
 
 
 if __name__ == "__main__":
