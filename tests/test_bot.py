@@ -88,6 +88,13 @@ class TestBybitTradingBot(unittest.TestCase):
         self.bot.trade_with_ma("BTCUSDT", 100, 10)
         self.bot.place_order.assert_called_once_with("BTCUSDT", "Buy", 100, 10)
 
+    def test_place_order_ignores_leverage_error(self):
+        self.session.set_leverage.side_effect = Exception(
+            "leverage not modified (ErrCode: 110043)"
+        )
+        self.bot.place_order("BTCUSDT", "Buy", 100, 10)
+        self.session.place_order.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()
