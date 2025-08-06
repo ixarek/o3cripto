@@ -18,6 +18,7 @@ __all__ = [
     "sma_crossover",
     "breakout",
     "mean_reversion",
+    "half_year_strategy",
 ]
 
 
@@ -175,3 +176,74 @@ def log_performance_metrics(
     )
     handler.close()
     logger.handlers.clear()
+
+
+def half_year_strategy(
+    candles: Sequence[Sequence[float]], k: float = 2.0
+) -> Tuple[str, float, float]:
+    """Return trade signal with stop-loss and take-profit from 6 month data.
+
+    ``candles`` should contain at least 200 entries of ``[ts, open, high, low, close, volume]``
+    representing 4-hour bars. The function analyses trend using EMA50/EMA200 and RSI14
+    and computes ATR14 for volatility. Take-profit is placed at ``entry ± k*ATR`` while
+    stop-loss uses ``±ATR`` depending on the trade direction.
+    """
+
+    if len(candles) < 200:
+        raise ValueError("need at least 200 candles")
+
+    closes = [float(c[4]) for c in candles]
+    highs = [float(c[2]) for c in candles]
+    lows = [float(c[3]) for c in candles]
+
+    def ema(values: Sequence[float], period: int) -> float:
+        factor = 2 / (period + 1)
+        ema_val = values[0]
+        for price in values[1:]:
+            ema_val = price * factor + ema_val * (1 - factor)
+        return ema_val
+
+    def rsi(values: Sequence[float], period: int = 14) -> float:
+        gains = []
+        losses = []
+        for i in range(1, len(values)):
+            change = values[i] - values[i - 1]
+            gains.append(max(change, 0))
+            losses.append(max(-change, 0))
+        avg_gain = sum(gains[-period:]) / period
+        avg_loss = sum(losses[-period:]) / period
+        if avg_loss == 0:
+            return 100.0
+        rs = avg_gain / avg_loss
+        return 100 - 100 / (1 + rs)
+
+    def atr(high: Sequence[float], low: Sequence[float], close: Sequence[float], period: int = 14) -> float:
+        trs = []
+        for i in range(1, len(close)):
+            tr = max(
+                high[i] - low[i],
+                abs(high[i] - close[i - 1]),
+                abs(low[i] - close[i - 1]),
+            )
+            trs.append(tr)
+        return sum(trs[-period:]) / period
+
+    ema50 = ema(closes, 50)
+    ema200 = ema(closes, 200)
+    rsi_val = rsi(closes)
+    atr_val = atr(highs, lows, closes)
+    price = closes[-1]
+
+    if ema50 > ema200 and rsi_val > 50:
+        signal = "Buy"
+        stop = price - atr_val
+        take = price + k * atr_val
+    elif ema50 < ema200 and rsi_val < 50:
+        signal = "Sell"
+        stop = price + atr_val
+        take = price - k * atr_val
+    else:
+        signal = "Hold"
+        stop = take = price
+
+    return signal, stop, take
