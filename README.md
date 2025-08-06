@@ -22,6 +22,6 @@ It also provides helpers for placing and closing leveraged market orders on
 
 Run unit tests with:
 
-```bash
-pytest
-```
+
+python -m unittest tests.test_bot
+
