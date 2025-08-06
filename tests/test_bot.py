@@ -3,10 +3,10 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock
 
-
+# Добавляем путь к родительской папке, чтобы импортировать bot.py
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from bot import BybitTradingBot
+from bot import BybitTradingBot  # импорт класса из твоего основного бота
 
 
 class TestBybitTradingBot(unittest.TestCase):
@@ -58,4 +58,3 @@ class TestBybitTradingBot(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
