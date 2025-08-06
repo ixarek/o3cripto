@@ -3,6 +3,8 @@ from pybit.unified_trading import HTTP
 import urllib3
 import logging
 from typing import Optional
+from functools import lru_cache
+from decimal import Decimal
 
 
 logger = logging.getLogger(__name__)
@@ -46,6 +48,30 @@ class BybitTradingBot:
             raise ValueError(f"No price data for {symbol}")
         return float(price)
 
+    @lru_cache(maxsize=None)
+    def _lot_step(self, symbol: str) -> tuple[float, float]:
+        """Return quantity step and minimum order size for symbol."""
+        result = self.session.get_instruments_info(
+            category="linear", symbol=symbol
+        )
+        info = result.get("result", {}).get("list", [{}])[0].get(
+            "lotSizeFilter", {}
+        )
+        step = float(info.get("qtyStep", 1))
+        min_qty = float(info.get("minOrderQty", step))
+        return step, min_qty
+
+    def _format_qty(self, symbol: str, qty: float) -> float:
+        """Round quantity to exchange step size."""
+        step, min_qty = self._lot_step(symbol)
+        d_step = Decimal(str(step))
+        d_qty = Decimal(str(qty))
+        d_min = Decimal(str(min_qty))
+        adjusted = (d_qty // d_step) * d_step
+        if adjusted < d_min:
+            adjusted = d_min
+        return float(adjusted)
+
     def _set_leverage(self, symbol: str, leverage: int) -> None:
         """Safely set leverage ignoring non-modification errors."""
         try:
@@ -66,7 +92,7 @@ class BybitTradingBot:
         """Place a market order respecting risk limits."""
         self._validate(symbol, amount, leverage)
         price = self._last_price(symbol)
-        qty = amount * leverage / price
+        qty = self._format_qty(symbol, amount * leverage / price)
         self._set_leverage(symbol, leverage)
         return self.session.place_order(
             category="linear",
@@ -83,7 +109,7 @@ class BybitTradingBot:
         """Close an existing position by placing an opposite market order."""
         self._validate(symbol, amount, leverage)
         price = self._last_price(symbol)
-        qty = amount * leverage / price
+        qty = self._format_qty(symbol, amount * leverage / price)
         close_side = "Sell" if side == "Buy" else "Buy"
         return self.session.place_order(
             category="linear",
