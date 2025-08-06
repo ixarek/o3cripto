@@ -98,6 +98,7 @@ def test_half_year_strategy_buy_sell():
     assert take < down_prices[-1] < stop
 
 
+
 def test_half_year_strategy_scaling():
     prices = list(range(1, 260))
     candles = _make_candles(prices)
@@ -124,3 +125,4 @@ def test_half_year_strategy_scaling():
     assert signal == "Buy"
     assert pytest.approx(price - stop, rel=1e-6) == atr_val
     assert pytest.approx(take - price, rel=1e-6) == 2 * atr_val
+

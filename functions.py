@@ -185,9 +185,11 @@ def half_year_strategy(
 
     ``candles`` should contain at least 200 entries of ``[ts, open, high, low, close, volume]``
     representing 4-hour bars. The function analyses trend using EMA50/EMA200 and RSI14
+
     and computes ATR14 for volatility. ATR is converted to an equivalent 5-minute value
     by dividing by ``48`` so that stop-loss uses ``±ATR_5m`` and take-profit uses
     ``±k*ATR_5m`` depending on the trade direction.
+
     """
 
     if len(candles) < 200:
@@ -233,17 +235,21 @@ def half_year_strategy(
     ema200 = ema(closes, 200)
     rsi_val = rsi(closes)
     atr_val = atr(highs, lows, closes)
+
     atr_5m = atr_val / 48  # convert 4h ATR to 5m equivalent
+
     price = closes[-1]
 
     if ema50 > ema200 and rsi_val > 50:
         signal = "Buy"
+
         stop = price - atr_5m
         take = price + k * atr_5m
     elif ema50 < ema200 and rsi_val < 50:
         signal = "Sell"
         stop = price + atr_5m
         take = price - k * atr_5m
+
     else:
         signal = "Hold"
         stop = take = price
