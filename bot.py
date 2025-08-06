@@ -31,16 +31,27 @@ class BybitTradingBot:
         if not 10 <= leverage <= 20:
             raise ValueError("Leverage must be between 10 and 20")
 
+    def _set_leverage(self, symbol: str, leverage: int) -> None:
+        """Safely set leverage ignoring non-modification errors."""
+        try:
+            self.session.set_leverage(
+                category="linear",
+                symbol=symbol,
+                buyLeverage=str(leverage),
+                sellLeverage=str(leverage),
+            )
+        except Exception as exc:  # pragma: no cover - network errors
+            msg = str(exc)
+            if "110043" in msg or "leverage not modified" in msg.lower():
+                logger.info(f"{symbol}: leverage already set to {leverage}")
+            else:
+                raise
+
     def place_order(self, symbol: str, side: str, amount: float, leverage: int) -> dict:
         """Place a market order respecting risk limits."""
         self._validate(symbol, amount, leverage)
         qty = amount * leverage
-        self.session.set_leverage(
-            category="linear",
-            symbol=symbol,
-            buyLeverage=str(leverage),
-            sellLeverage=str(leverage),
-        )
+        self._set_leverage(symbol, leverage)
         return self.session.place_order(
             category="linear",
             symbol=symbol,
