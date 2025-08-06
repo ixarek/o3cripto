@@ -2,6 +2,7 @@ from config import BybitConfig
 from pybit.unified_trading import HTTP
 import urllib3
 import logging
+from typing import Optional
 
 
 logger = logging.getLogger(__name__)
@@ -84,6 +85,33 @@ class BybitTradingBot:
             trend = "stable, price unchanged"
         logger.info(f"{symbol}: {trend}")
 
+    def ma_crossover_signal(self, symbol: str) -> str:
+        """Return Buy/Sell/Hold using a 5/20 SMA crossover."""
+        result = self.session.get_kline(
+            category="linear", symbol=symbol, interval=5, limit=50
+        )
+        candles = result.get("result", {}).get("list", [])
+        if len(candles) < 20:
+            logger.warning(f"Not enough kline data for {symbol}")
+            return "Hold"
+        closes = [float(c[4]) for c in reversed(candles)]
+        short_sma = sum(closes[-5:]) / 5
+        long_sma = sum(closes[-20:]) / 20
+        if short_sma > long_sma:
+            return "Buy"
+        if short_sma < long_sma:
+            return "Sell"
+        return "Hold"
+
+    def trade_with_ma(self, symbol: str, amount: float, leverage: int) -> Optional[dict]:
+        """Execute trade based on moving average crossover signal."""
+        self._validate(symbol, amount, leverage)
+        signal = self.ma_crossover_signal(symbol)
+        if signal == "Hold":
+            logger.info(f"{symbol}: no trade signal")
+            return None
+        return self.place_order(symbol, signal, amount, leverage)
+
     def log_all_trends(self) -> None:
         for symbol in self.ALLOWED_SYMBOLS:
             self.log_market_trend(symbol)
@@ -111,9 +139,14 @@ def main() -> None:
     else:
         print(result)
     bot.log_all_trends()
-    # Example usage (requires valid API keys):
-    # bot.place_order("BTCUSDT", "Buy", 100, 10)
-    # bot.close_position("BTCUSDT", "Buy", 100, 10)
+    for symbol in bot.ALLOWED_SYMBOLS:
+        try:
+            result = bot.trade_with_ma(symbol, 100, 10)
+            if result:
+                logger.info(f"{symbol}: order placed {result}")
+        except Exception as exc:
+            logger.error(f"{symbol}: trade failed: {exc}")
+
 
 
 if __name__ == "__main__":
