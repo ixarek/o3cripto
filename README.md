@@ -29,6 +29,27 @@
 Также он содержит вспомогательные функции для открытия и закрытия рыночных ордеров с плечом на парах
 `BTCUSDT`, `ETHUSDT`, `SOLUSDT`, `XRPUSDT`, `DOGEUSDT` и `BNBUSDT`.
 
+## Запуск как сервис (systemd)
+
+Чтобы бот работал без открытой SSH‑сессии, можно оформить его как сервис systemd.
+
+1. Скопируйте файл `o3cripto.service` в `/etc/systemd/system/`:
+   ```bash
+   sudo cp o3cripto.service /etc/systemd/system/
+   ```
+2. Перечитайте конфигурацию и запустите сервис:
+   ```bash
+   sudo systemctl daemon-reload
+   sudo systemctl enable --now o3cripto.service
+   ```
+3. Логи можно смотреть командой:
+   ```bash
+   journalctl -u o3cripto.service -f
+   ```
+
+Файл сервиса запускает бота командой `/usr/bin/python3 /root/o3cripto/bot.py`
+и автоматически перезапускает процесс при сбоях.
+
 ## Вспомогательные функции
 
 - `calculate_dynamic_order_size` — размер позиции по балансу и волатильности
