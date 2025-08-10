@@ -202,6 +202,14 @@ class TestBybitTradingBot(unittest.TestCase):
         self.bot.place_order.assert_not_called()
         self.assertIn("no trade signal", cm.output[0])
 
+    def test_recent_trades_calls_api(self):
+        self.session.get_executions.return_value = {"result": {"list": [{"a": 1}]}}
+        trades = self.bot.recent_trades("BTCUSDT")
+        self.session.get_executions.assert_called_once_with(
+            category="linear", symbol="BTCUSDT", limit=10
+        )
+        self.assertEqual(trades, [{"a": 1}])
+
     def test_place_order_ignores_leverage_error(self):
         self.session.set_leverage.side_effect = Exception(
             "leverage not modified (ErrCode: 110043)"
@@ -241,23 +249,26 @@ class TestBybitTradingBot(unittest.TestCase):
             self.bot._last_price("BTCUSDT")
 
     def test_calculate_sl_tp_buy(self):
-        self.session.get_kline.side_effect = [
-            {"result": {"list": [[0, 0, 0, 0, "90", 0], [0, 0, 0, 0, "100", 0]]}},
-            {"result": {"list": [[0, 0, 0, 0, "95", 0], [0, 0, 0, 0, "100", 0]]}},
-        ]
-        self.session.get_tickers.return_value = {"result": {"list": [{"lastPrice": "96"}]}}
+        closes = list(range(100, 115))
+        candles = [[0, p, p + 1, p - 1, p, 0] for p in reversed(closes)]
+        self.session.get_kline.return_value = {"result": {"list": candles}}
+        self.session.get_tickers.return_value = {
+            "result": {"list": [{"lastPrice": "114"}]}
+        }
         stop, take = self.bot._calculate_sl_tp("BTCUSDT", "Buy")
-        self.assertLess(stop, 96)
-        self.assertGreater(take, 96)
+        self.assertAlmostEqual(stop, 111)
+        self.assertAlmostEqual(take, 119)
 
     def test_calculate_sl_tp_sell(self):
-        self.session.get_kline.side_effect = [
-            {"result": {"list": [[0, 0, 0, 0, "90", 0], [0, 0, 0, 0, "100", 0]]}},
-            {"result": {"list": [[0, 0, 0, 0, "100", 0], [0, 0, 0, 0, "95", 0]]}},
-        ]
-        self.session.get_tickers.return_value = {"result": {"list": [{"lastPrice": "96"}]}}
+        closes = list(range(100, 115))
+        candles = [[0, p, p + 1, p - 1, p, 0] for p in reversed(closes)]
+        self.session.get_kline.return_value = {"result": {"list": candles}}
+        self.session.get_tickers.return_value = {
+            "result": {"list": [{"lastPrice": "114"}]}
+        }
         stop, take = self.bot._calculate_sl_tp("BTCUSDT", "Sell")
-        self.assertGreater(stop, take)
+        self.assertAlmostEqual(stop, 117)
+        self.assertAlmostEqual(take, 109)
 
     def test_calculate_sl_tp_no_data(self):
         self.session.get_kline.return_value = {"result": {"list": []}}

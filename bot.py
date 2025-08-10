@@ -105,28 +105,34 @@ class BybitTradingBot:
             else:
                 raise
 
-    def _calculate_sl_tp(self, symbol: str, side: str) -> tuple[float, float]:
-        """Determine stop-loss and take-profit using support/resistance and trend."""
-        long = self.session.get_kline(
-            category="linear", symbol=symbol, interval=15, limit=50
+    def _atr(self, symbol: str, period: int = 14) -> float:
+        """Calculate Average True Range for ``symbol`` on 5‑minute candles."""
+        result = self.session.get_kline(
+            category="linear", symbol=symbol, interval=5, limit=period + 1
         )
-        short = self.session.get_kline(
-            category="linear", symbol=symbol, interval=5, limit=50
-        )
-        long_c = [float(c[4]) for c in long.get("result", {}).get("list", [])]
-        short_c = [float(c[4]) for c in short.get("result", {}).get("list", [])]
-        if not long_c or not short_c:
+        candles = result.get("result", {}).get("list", [])
+        if len(candles) < period + 1:
             raise ValueError(f"No kline data for {symbol}")
-        support = min(long_c)
-        resistance = max(long_c)
-        trend_up = short_c[-1] >= short_c[0]
+        # Bybit returns newest first; reverse to chronological order
+        candles = [list(map(float, c[1:5])) for c in reversed(candles)]
+        trs = []
+        for i in range(1, len(candles)):
+            prev_close = candles[i - 1][3]
+            _open, high, low, close = candles[i]
+            tr = max(high - low, abs(high - prev_close), abs(low - prev_close))
+            trs.append(tr)
+        return sum(trs) / period
+
+    def _calculate_sl_tp(self, symbol: str, side: str) -> tuple[float, float]:
+        """Determine stop-loss and take-profit using ATR multiples."""
         price = self._last_price(symbol)
+        atr = self._atr(symbol)
         if side == "Buy":
-            stop = min(support, price * 0.99)
-            take = max(resistance, price * (1.02 if trend_up else 1.01))
+            stop = price - 1.5 * atr
+            take = price + 2.5 * atr
         else:
-            stop = max(resistance, price * 1.01)
-            take = min(support, price * (0.98 if trend_up else 0.99))
+            stop = price + 1.5 * atr
+            take = price - 2.5 * atr
         return stop, take
 
     def place_order(
@@ -282,6 +288,16 @@ class BybitTradingBot:
         self, symbol: str, amount: float, leverage: int
     ) -> Optional[dict]:  # pragma: no cover - backward compatibility
         return self.trade_with_signals(symbol, amount, leverage)
+
+    def recent_trades(self, symbol: str, limit: int = 10) -> list[dict]:
+        """Return recent trade executions for ``symbol``.
+
+        Used for analysing past performance via Bybit API.
+        """
+        result = self.session.get_executions(
+            category="linear", symbol=symbol, limit=limit
+        )
+        return result.get("result", {}).get("list", [])
 
     def log_all_trends(self) -> None:
         for symbol in self.ALLOWED_SYMBOLS:
