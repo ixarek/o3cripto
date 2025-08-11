@@ -4,6 +4,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
+import statistics
 
 __all__ = [
     "calculate_dynamic_order_size",
@@ -18,6 +19,7 @@ __all__ = [
     "sma_crossover",
     "breakout",
     "mean_reversion",
+    "rsi_strategy",
     "half_year_strategy",
 ]
 
@@ -90,18 +92,104 @@ def limit_open_positions(open_positions: Sequence[str], limit: int) -> bool:
     return len(open_positions) < limit
 
 
-# Dummy strategy functions used by ``select_strategy``
+# Helper for strategy ATR calculations
 
-def sma_crossover(*args, **kwargs):
-    pass
+def _atr_from_candles(candles: Sequence[Sequence[float]], period: int = 14) -> float:
+    highs = [float(c[2]) for c in candles]
+    lows = [float(c[3]) for c in candles]
+    closes = [float(c[4]) for c in candles]
+    trs: List[float] = []
+    for i in range(1, len(closes)):
+        tr = max(
+            highs[i] - lows[i],
+            abs(highs[i] - closes[i - 1]),
+            abs(lows[i] - closes[i - 1]),
+        )
+        trs.append(tr)
+    return sum(trs[-period:]) / period
 
 
-def breakout(*args, **kwargs):
-    pass
+def sma_crossover(
+    candles: Sequence[Sequence[float]], short: int = 5, long: int = 20, k: float = 2.0
+) -> Tuple[str, float, float]:
+    """Simple SMA crossover strategy returning signal, stop-loss and take-profit."""
+
+    closes = [float(c[4]) for c in candles]
+    if len(closes) < long:
+        raise ValueError("not enough data")
+    short_sma = sum(closes[-short:]) / short
+    long_sma = sum(closes[-long:]) / long
+    price = closes[-1]
+    atr = _atr_from_candles(candles)
+    if short_sma > long_sma:
+        return "Buy", price - atr, price + k * atr
+    if short_sma < long_sma:
+        return "Sell", price + atr, price - k * atr
+    return "Hold", price, price
 
 
-def mean_reversion(*args, **kwargs):
-    pass
+def breakout(
+    candles: Sequence[Sequence[float]], lookback: int = 20, k: float = 2.0
+) -> Tuple[str, float, float]:
+    """Breakout strategy based on recent highs/lows."""
+
+    if len(candles) < lookback + 1:
+        raise ValueError("not enough data")
+    highs = [float(c[2]) for c in candles]
+    lows = [float(c[3]) for c in candles]
+    closes = [float(c[4]) for c in candles]
+    prev_high = max(highs[-(lookback + 1) : -1])
+    prev_low = min(lows[-(lookback + 1) : -1])
+    price = closes[-1]
+    atr = _atr_from_candles(candles)
+    if price > prev_high:
+        return "Buy", price - atr, price + k * atr
+    if price < prev_low:
+        return "Sell", price + atr, price - k * atr
+    return "Hold", price, price
+
+
+def mean_reversion(
+    candles: Sequence[Sequence[float]], period: int = 20, k: float = 2.0
+) -> Tuple[str, float, float]:
+    """Mean reversion using Bollinger bands."""
+
+    closes = [float(c[4]) for c in candles]
+    if len(closes) < period:
+        raise ValueError("not enough data")
+    sma = sum(closes[-period:]) / period
+    std = statistics.pstdev(closes[-period:])
+    upper = sma + k * std
+    lower = sma - k * std
+    price = closes[-1]
+    atr = _atr_from_candles(candles)
+    if price < lower:
+        return "Buy", price - atr, sma
+    if price > upper:
+        return "Sell", price + atr, sma
+    return "Hold", price, price
+
+
+def rsi_strategy(
+    candles: Sequence[Sequence[float]], period: int = 14, k: float = 2.0
+) -> Tuple[str, float, float]:
+    """RSI overbought/oversold strategy."""
+
+    closes = [float(c[4]) for c in candles]
+    if len(closes) < period + 1:
+        raise ValueError("not enough data")
+    gains = [max(closes[i] - closes[i - 1], 0) for i in range(1, len(closes))]
+    losses = [max(closes[i - 1] - closes[i], 0) for i in range(1, len(closes))]
+    avg_gain = sum(gains[-period:]) / period
+    avg_loss = sum(losses[-period:]) / period
+    rsi = 100 if avg_loss == 0 else 100 - 100 / (1 + avg_gain / avg_loss)
+    price = closes[-1]
+    atr = _atr_from_candles(candles)
+    if rsi < 30:
+        return "Buy", price - atr, price + k * atr
+    if rsi > 70:
+        return "Sell", price + atr, price - k * atr
+    return "Hold", price, price
 
 
 def select_strategy(
@@ -114,6 +202,7 @@ def select_strategy(
         "sma_crossover": sma_crossover,
         "breakout": breakout,
         "mean_reversion": mean_reversion,
+        "rsi": rsi_strategy,
     }
     name = config.get("strategy")
     if name not in strategies:

@@ -15,7 +15,10 @@ from functions import (
     reload_config,
     cache_candles,
     log_performance_metrics,
+    sma_crossover,
     breakout,
+    mean_reversion,
+    rsi_strategy,
     half_year_strategy,
 )
 
@@ -125,4 +128,35 @@ def test_half_year_strategy_scaling():
     assert signal == "Buy"
     assert pytest.approx(price - stop, rel=1e-6) == atr_val
     assert pytest.approx(take - price, rel=1e-6) == 2 * atr_val
+
+
+def test_sma_crossover_signals():
+    up = _make_candles(range(1, 40))
+    signal, _, _ = sma_crossover(up)
+    assert signal == "Buy"
+    down = _make_candles(range(40, 0, -1))
+    signal, _, _ = sma_crossover(down)
+    assert signal == "Sell"
+
+
+def test_breakout_buy():
+    prices = [1] * 20 + [5]
+    signal, _, _ = breakout(_make_candles(prices))
+    assert signal == "Buy"
+
+
+def test_mean_reversion_sell():
+    prices = [100] * 20 + [120]
+    signal, _, target = mean_reversion(_make_candles(prices))
+    assert signal == "Sell"
+    assert target == pytest.approx(sum(prices[-20:]) / 20)
+
+
+def test_rsi_strategy_buy_sell():
+    prices = list(range(100, 84, -1))
+    signal, _, _ = rsi_strategy(_make_candles(prices))
+    assert signal == "Buy"
+    prices = list(range(84, 100))
+    signal, _, _ = rsi_strategy(_make_candles(prices))
+    assert signal == "Sell"
 
