@@ -14,6 +14,7 @@ from functions import (
     mean_reversion,
     rsi_strategy,
     half_year_strategy,
+    apply_sl_tp_bounds,
 )
 
 
@@ -141,6 +142,7 @@ class BybitTradingBot:
         else:
             stop = price + 1.5 * atr
             take = price - 2.5 * atr
+        stop, take = apply_sl_tp_bounds(price, side, stop, take)
         return stop, take
 
     def place_order(

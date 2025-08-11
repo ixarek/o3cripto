@@ -21,6 +21,7 @@ __all__ = [
     "mean_reversion",
     "rsi_strategy",
     "half_year_strategy",
+    "apply_sl_tp_bounds",
 ]
 
 
@@ -109,6 +110,31 @@ def _atr_from_candles(candles: Sequence[Sequence[float]], period: int = 14) -> f
     return sum(trs[-period:]) / period
 
 
+def apply_sl_tp_bounds(
+    price: float,
+    side: str,
+    stop: float,
+    take: float,
+    min_pct: float = 1.5,
+    max_pct: float = 5.0,
+) -> tuple[float, float]:
+    """Clamp stop-loss and take-profit distances to ``min_pct``–``max_pct`` of price."""
+
+    min_dist = price * (min_pct / 100)
+    max_dist = price * (max_pct / 100)
+    stop_dist = abs(price - stop)
+    take_dist = abs(take - price)
+    stop_dist = max(min_dist, min(stop_dist, max_dist))
+    take_dist = max(min_dist, min(take_dist, max_dist))
+    if side == "Buy":
+        stop = price - stop_dist
+        take = price + take_dist
+    else:
+        stop = price + stop_dist
+        take = price - take_dist
+    return stop, take
+
+
 def sma_crossover(
     candles: Sequence[Sequence[float]], short: int = 5, long: int = 20, k: float = 2.0
 ) -> Tuple[str, float, float]:
@@ -122,10 +148,17 @@ def sma_crossover(
     price = closes[-1]
     atr = _atr_from_candles(candles)
     if short_sma > long_sma:
-        return "Buy", price - atr, price + k * atr
-    if short_sma < long_sma:
-        return "Sell", price + atr, price - k * atr
-    return "Hold", price, price
+        signal = "Buy"
+        stop = price - atr
+        take = price + k * atr
+    elif short_sma < long_sma:
+        signal = "Sell"
+        stop = price + atr
+        take = price - k * atr
+    else:
+        return "Hold", price, price
+    stop, take = apply_sl_tp_bounds(price, signal, stop, take)
+    return signal, stop, take
 
 
 def breakout(
@@ -143,10 +176,17 @@ def breakout(
     price = closes[-1]
     atr = _atr_from_candles(candles)
     if price > prev_high:
-        return "Buy", price - atr, price + k * atr
-    if price < prev_low:
-        return "Sell", price + atr, price - k * atr
-    return "Hold", price, price
+        signal = "Buy"
+        stop = price - atr
+        take = price + k * atr
+    elif price < prev_low:
+        signal = "Sell"
+        stop = price + atr
+        take = price - k * atr
+    else:
+        return "Hold", price, price
+    stop, take = apply_sl_tp_bounds(price, signal, stop, take)
+    return signal, stop, take
 
 
 def mean_reversion(
@@ -164,10 +204,17 @@ def mean_reversion(
     price = closes[-1]
     atr = _atr_from_candles(candles)
     if price < lower:
-        return "Buy", price - atr, sma
-    if price > upper:
-        return "Sell", price + atr, sma
-    return "Hold", price, price
+        signal = "Buy"
+        stop = price - atr
+        take = sma
+    elif price > upper:
+        signal = "Sell"
+        stop = price + atr
+        take = sma
+    else:
+        return "Hold", price, price
+    stop, take = apply_sl_tp_bounds(price, signal, stop, take)
+    return signal, stop, take
 
 
 def rsi_strategy(
@@ -186,10 +233,17 @@ def rsi_strategy(
     price = closes[-1]
     atr = _atr_from_candles(candles)
     if rsi < 30:
-        return "Buy", price - atr, price + k * atr
-    if rsi > 70:
-        return "Sell", price + atr, price - k * atr
-    return "Hold", price, price
+        signal = "Buy"
+        stop = price - atr
+        take = price + k * atr
+    elif rsi > 70:
+        signal = "Sell"
+        stop = price + atr
+        take = price - k * atr
+    else:
+        return "Hold", price, price
+    stop, take = apply_sl_tp_bounds(price, signal, stop, take)
+    return signal, stop, take
 
 
 def select_strategy(
@@ -331,16 +385,15 @@ def half_year_strategy(
 
     if ema50 > ema200 and rsi_val > 50:
         signal = "Buy"
-
         stop = price - atr_5m
         take = price + k * atr_5m
     elif ema50 < ema200 and rsi_val < 50:
         signal = "Sell"
         stop = price + atr_5m
         take = price - k * atr_5m
-
     else:
         signal = "Hold"
         stop = take = price
-
+        return signal, stop, take
+    stop, take = apply_sl_tp_bounds(price, signal, stop, take)
     return signal, stop, take
