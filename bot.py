@@ -3,10 +3,18 @@ from pybit.unified_trading import HTTP
 import urllib3
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Callable
 from functools import lru_cache
 from decimal import Decimal
 import time
+
+from functions import (
+    sma_crossover,
+    breakout,
+    mean_reversion,
+    rsi_strategy,
+    half_year_strategy,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -303,6 +311,58 @@ class BybitTradingBot:
         for symbol in self.ALLOWED_SYMBOLS:
             self.log_market_trend(symbol)
 
+    def trade_strategy(
+        self,
+        symbol: str,
+        amount: float,
+        leverage: int,
+        strategy: Callable,
+        interval: int = 5,
+        limit: int = 50,
+    ) -> Optional[dict]:
+        """Generic wrapper executing ``strategy`` using recent candles."""
+
+        self._validate(symbol, amount, leverage)
+        result = self.session.get_kline(
+            category="linear", symbol=symbol, interval=interval, limit=limit
+        )
+        candles = result.get("result", {}).get("list", [])
+        if len(candles) < limit:
+            logger.warning(f"{symbol}: not enough kline data for {strategy.__name__}")
+            return None
+        candles = [list(map(float, c[1:6])) for c in reversed(candles)]
+        signal, stop, take = strategy(candles)
+        if signal == "Hold":
+            logger.info(f"{symbol}: {strategy.__name__} -> no signal")
+            return None
+        logger.info(
+            f"{symbol}: {strategy.__name__} -> {signal} SL={stop:.2f} TP={take:.2f}"
+        )
+        return self.place_order(symbol, signal, amount, leverage, stop, take)
+
+    def trade_half_year(
+        self, symbol: str, amount: float, leverage: int
+    ) -> Optional[dict]:
+        """Execute half-year strategy on 4h candles."""
+
+        self._validate(symbol, amount, leverage)
+        result = self.session.get_kline(
+            category="linear", symbol=symbol, interval=240, limit=200
+        )
+        candles = result.get("result", {}).get("list", [])
+        if len(candles) < 200:
+            logger.warning(f"{symbol}: not enough kline data for half_year_strategy")
+            return None
+        candles = [list(map(float, c[:6])) for c in reversed(candles)]
+        signal, stop, take = half_year_strategy(candles)
+        if signal == "Hold":
+            logger.info(f"{symbol}: half_year_strategy -> no signal")
+            return None
+        logger.info(
+            f"{symbol}: half_year_strategy -> {signal} SL={stop:.2f} TP={take:.2f}"
+        )
+        return self.place_order(symbol, signal, amount, leverage, stop, take)
+
 
 def main() -> None:  # pragma: no cover - side effects and infinite loop
     cfg = BybitConfig.from_env()
@@ -325,15 +385,23 @@ def main() -> None:  # pragma: no cover - side effects and infinite loop
         print(f"Failed to fetch balance: {exc}")
     else:
         print(result)
+    strategies = [
+        lambda s: bot.trade_strategy(s, 100, 10, sma_crossover),
+        lambda s: bot.trade_strategy(s, 100, 10, breakout),
+        lambda s: bot.trade_strategy(s, 100, 10, mean_reversion),
+        lambda s: bot.trade_strategy(s, 100, 10, rsi_strategy),
+        lambda s: bot.trade_half_year(s, 100, 10),
+    ]
     while True:
         bot.log_all_trends()
         for symbol in bot.ALLOWED_SYMBOLS:
-            try:
-                result = bot.trade_with_signals(symbol, 100, 10)
-                if result:
-                    logger.info(f"{symbol}: order placed {result}")
-            except Exception as exc:
-                logger.error(f"{symbol}: trade failed: {exc}")
+            for strat in strategies:
+                try:
+                    result = strat(symbol)
+                    if result:
+                        logger.info(f"{symbol}: order placed {result}")
+                except Exception as exc:
+                    logger.error(f"{symbol}: trade failed: {exc}")
         time.sleep(60)
 
 
