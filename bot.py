@@ -177,6 +177,7 @@ class BybitTradingBot:
             timeInForce="ImmediateOrCancel",
             stopLoss=str(stop_loss),
             takeProfit=str(take_profit),
+            tpslMode="Partial",
         )
 
     def close_position(

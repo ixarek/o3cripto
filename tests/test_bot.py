@@ -49,6 +49,7 @@ class TestBybitTradingBot(unittest.TestCase):
         self.assertEqual(kwargs["timeInForce"], "ImmediateOrCancel")
         self.assertEqual(kwargs["stopLoss"], "95")
         self.assertEqual(kwargs["takeProfit"], "105")
+        self.assertEqual(kwargs["tpslMode"], "Partial")
         self.assertAlmostEqual(float(kwargs["qty"]), 10.0)
 
     def test_close_position_calls_api(self):
