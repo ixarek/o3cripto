@@ -275,6 +275,21 @@ class TestBybitTradingBot(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.bot._calculate_sl_tp("BTCUSDT", "Buy")
 
+    def test_calculate_sl_tp_bounds(self):
+        candles_small = [[0, 100, 100.005, 99.995, 100, 0]] * 15
+        self.session.get_kline.return_value = {"result": {"list": candles_small}}
+        self.session.get_tickers.return_value = {
+            "result": {"list": [{"lastPrice": "100"}]}
+        }
+        stop, take = self.bot._calculate_sl_tp("BTCUSDT", "Buy")
+        self.assertAlmostEqual(stop, 98.5)
+        self.assertAlmostEqual(take, 101.5)
+        candles_large = [[0, 100, 110, 90, 100, 0]] * 15
+        self.session.get_kline.return_value = {"result": {"list": candles_large}}
+        stop, take = self.bot._calculate_sl_tp("BTCUSDT", "Buy")
+        self.assertAlmostEqual(stop, 95)
+        self.assertAlmostEqual(take, 105)
+
     def test_log_all_trends_invokes_log_market_trend(self):
         self.bot.log_market_trend = MagicMock()
         self.bot.log_all_trends()

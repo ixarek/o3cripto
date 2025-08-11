@@ -20,6 +20,7 @@ from functions import (
     mean_reversion,
     rsi_strategy,
     half_year_strategy,
+    apply_sl_tp_bounds,
 )
 
 def test_calculate_dynamic_order_size():
@@ -66,6 +67,16 @@ def test_reload_config():
         cfg.write_text(json.dumps({"b": 2}))
         new = reload_config(cfg, current)
         assert new == {"a": 1, "b": 2}
+
+
+def test_apply_sl_tp_bounds():
+    price = 100
+    stop, take = apply_sl_tp_bounds(price, "Buy", 99.9, 100.2)
+    assert stop == pytest.approx(98.5)
+    assert take == pytest.approx(101.5)
+    stop, take = apply_sl_tp_bounds(price, "Buy", 50, 200)
+    assert stop == pytest.approx(95)
+    assert take == pytest.approx(105)
 
 
 def test_cache_candles(tmp_path):
@@ -126,8 +137,9 @@ def test_half_year_strategy_scaling():
     price = closes[-1]
 
     assert signal == "Buy"
-    assert pytest.approx(price - stop, rel=1e-6) == atr_val
-    assert pytest.approx(take - price, rel=1e-6) == 2 * atr_val
+    expected = price * 0.015
+    assert pytest.approx(price - stop, rel=1e-6) == expected
+    assert pytest.approx(take - price, rel=1e-6) == expected
 
 
 def test_sma_crossover_signals():
@@ -149,7 +161,7 @@ def test_mean_reversion_sell():
     prices = [100] * 20 + [120]
     signal, _, target = mean_reversion(_make_candles(prices))
     assert signal == "Sell"
-    assert target == pytest.approx(sum(prices[-20:]) / 20)
+    assert target == pytest.approx(114.0)
 
 
 def test_rsi_strategy_buy_sell():
