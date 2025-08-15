@@ -194,10 +194,11 @@ class TestBybitTradingBot(unittest.TestCase):
     def test_trade_with_signals_calls_place_order(self):
         self.bot.combined_signal = MagicMock(return_value=("Buy", "Buy", "Buy"))
         self.bot.place_order = MagicMock()
+        self.bot._last_price = MagicMock(return_value=100)
         self.bot._calculate_sl_tp = MagicMock(return_value=(90, 110))
         self.bot.trade_with_signals("BTCUSDT", 100, 10)
         self.bot.place_order.assert_called_once_with(
-            "BTCUSDT", "Buy", 100, 10, 90, 110
+            "BTCUSDT", "Buy", 100, 10, 90, 110, 100
         )
 
     def test_trade_with_signals_no_signal(self):
@@ -269,7 +270,8 @@ class TestBybitTradingBot(unittest.TestCase):
         self.session.get_tickers.return_value = {
             "result": {"list": [{"lastPrice": "114"}]}
         }
-        stop, take = self.bot._calculate_sl_tp("BTCUSDT", "Buy")
+        price = 114
+        stop, take = self.bot._calculate_sl_tp("BTCUSDT", "Buy", price)
         self.assertAlmostEqual(stop, 111)
         self.assertAlmostEqual(take, 119)
 
@@ -280,14 +282,15 @@ class TestBybitTradingBot(unittest.TestCase):
         self.session.get_tickers.return_value = {
             "result": {"list": [{"lastPrice": "114"}]}
         }
-        stop, take = self.bot._calculate_sl_tp("BTCUSDT", "Sell")
+        price = 114
+        stop, take = self.bot._calculate_sl_tp("BTCUSDT", "Sell", price)
         self.assertAlmostEqual(stop, 117)
         self.assertAlmostEqual(take, 109)
 
     def test_calculate_sl_tp_no_data(self):
         self.session.get_kline.return_value = {"result": {"list": []}}
         with self.assertRaises(ValueError):
-            self.bot._calculate_sl_tp("BTCUSDT", "Buy")
+            self.bot._calculate_sl_tp("BTCUSDT", "Buy", 100)
 
     def test_calculate_sl_tp_bounds(self):
         candles_small = [[0, 100, 100.005, 99.995, 100, 0]] * 15
@@ -295,12 +298,13 @@ class TestBybitTradingBot(unittest.TestCase):
         self.session.get_tickers.return_value = {
             "result": {"list": [{"lastPrice": "100"}]}
         }
-        stop, take = self.bot._calculate_sl_tp("BTCUSDT", "Buy")
+        price = 100
+        stop, take = self.bot._calculate_sl_tp("BTCUSDT", "Buy", price)
         self.assertAlmostEqual(stop, 98.5)
         self.assertAlmostEqual(take, 101.5)
         candles_large = [[0, 100, 110, 90, 100, 0]] * 15
         self.session.get_kline.return_value = {"result": {"list": candles_large}}
-        stop, take = self.bot._calculate_sl_tp("BTCUSDT", "Buy")
+        stop, take = self.bot._calculate_sl_tp("BTCUSDT", "Buy", price)
         self.assertAlmostEqual(stop, 95)
         self.assertAlmostEqual(take, 105)
 
