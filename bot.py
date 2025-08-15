@@ -145,9 +145,16 @@ class BybitTradingBot:
             trs.append(tr)
         return sum(trs) / period
 
-    def _calculate_sl_tp(self, symbol: str, side: str) -> tuple[float, float]:
-        """Determine stop-loss and take-profit using ATR multiples."""
-        price = self._last_price(symbol)
+    def _calculate_sl_tp(
+        self, symbol: str, side: str, price: float
+    ) -> tuple[float, float]:
+        """Determine stop-loss and take-profit using ATR multiples.
+
+        ``price`` is the current market price used to derive levels so that
+        later validation uses the same reference and avoids mismatches when the
+        market moves between calls.
+        """
+
         atr = self._atr(symbol)
         if side == "Buy":
             stop = price - 1.5 * atr
@@ -166,12 +173,19 @@ class BybitTradingBot:
         leverage: int,
         stop_loss: float,
         take_profit: float,
+        price: float | None = None,
     ) -> dict:
-        """Place a market order respecting risk limits."""
+        """Place a market order respecting risk limits.
+
+        ``price`` may be provided to ensure validation uses the same market
+        price that was employed when calculating SL/TP levels. If omitted, the
+        latest price is fetched.
+        """
+
         if stop_loss is None or take_profit is None:
             raise ValueError("Stop loss and take profit required")
         self._validate(symbol, amount, leverage)
-        price = self._last_price(symbol)
+        price = self._last_price(symbol) if price is None else price
         stop_loss = self._format_price(symbol, stop_loss)
         take_profit = self._format_price(symbol, take_profit)
         if side == "Buy" and not (stop_loss < price < take_profit):
@@ -302,12 +316,13 @@ class BybitTradingBot:
         if signal == "Hold":
             logger.info(f"{symbol}: no trade signal (MA={ma}, RSI={rsi})")
             return None
-        stop_loss, take_profit = self._calculate_sl_tp(symbol, signal)
+        price = self._last_price(symbol)
+        stop_loss, take_profit = self._calculate_sl_tp(symbol, signal, price)
         logger.info(
             f"{symbol}: signal={signal} amount={amount} lev={leverage} SL={stop_loss:.2f} TP={take_profit:.2f}"
         )
         return self.place_order(
-            symbol, signal, amount, leverage, stop_loss, take_profit
+            symbol, signal, amount, leverage, stop_loss, take_profit, price
         )
 
     def trade_with_ma(
@@ -346,9 +361,12 @@ class BybitTradingBot:
         )
         candles = result.get("result", {}).get("list", [])
         if len(candles) < limit:
-            logger.warning(f"{symbol}: not enough kline data for {strategy.__name__}")
+            logger.warning(
+                f"{symbol}: not enough kline data for {strategy.__name__}"
+            )
             return None
-        candles = [list(map(float, c[1:6])) for c in reversed(candles)]
+        candles = [list(map(float, c[:6])) for c in reversed(candles)]
+        price = candles[-1][4]
         signal, stop, take = strategy(candles)
         if signal == "Hold":
             logger.info(f"{symbol}: {strategy.__name__} -> no signal")
@@ -356,7 +374,7 @@ class BybitTradingBot:
         logger.info(
             f"{symbol}: {strategy.__name__} -> {signal} SL={stop:.2f} TP={take:.2f}"
         )
-        return self.place_order(symbol, signal, amount, leverage, stop, take)
+        return self.place_order(symbol, signal, amount, leverage, stop, take, price)
 
     def trade_half_year(
         self, symbol: str, amount: float, leverage: int
@@ -372,6 +390,7 @@ class BybitTradingBot:
             logger.warning(f"{symbol}: not enough kline data for half_year_strategy")
             return None
         candles = [list(map(float, c[:6])) for c in reversed(candles)]
+        price = candles[-1][4]
         signal, stop, take = half_year_strategy(candles)
         if signal == "Hold":
             logger.info(f"{symbol}: half_year_strategy -> no signal")
@@ -379,7 +398,7 @@ class BybitTradingBot:
         logger.info(
             f"{symbol}: half_year_strategy -> {signal} SL={stop:.2f} TP={take:.2f}"
         )
-        return self.place_order(symbol, signal, amount, leverage, stop, take)
+        return self.place_order(symbol, signal, amount, leverage, stop, take, price)
 
 
 def main() -> None:  # pragma: no cover - side effects and infinite loop
