@@ -1,0 +1,240 @@
+2025-08-15 14:11:08,005 - __main__ - INFO - BTCUSDT: actively sold, price decreases (start=118945.10, end=118037.70)
+2025-08-15 14:11:08,211 - __main__ - INFO - ETHUSDT: actively sold, price decreases (start=4638.48, end=4560.45)
+2025-08-15 14:11:08,423 - __main__ - INFO - SOLUSDT: actively sold, price decreases (start=195.33, end=191.25)
+2025-08-15 14:11:08,636 - __main__ - INFO - XRPUSDT: actively sold, price decreases (start=3.11, end=3.10)
+2025-08-15 14:11:08,845 - __main__ - INFO - DOGEUSDT: actively sold, price decreases (start=0.23, end=0.23)
+2025-08-15 14:11:09,052 - __main__ - INFO - BNBUSDT: actively sold, price decreases (start=844.90, end=834.70)
+2025-08-15 14:11:09,264 - __main__ - INFO - BTCUSDT: sma_crossover -> Buy SL=87.59 TP=96.81
+2025-08-15 14:11:09,680 - __main__ - ERROR - BTCUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:11:09,888 - __main__ - INFO - BTCUSDT: breakout -> Sell SL=96.82 TP=87.60
+2025-08-15 14:11:10,103 - __main__ - ERROR - BTCUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:11:10,316 - __main__ - INFO - BTCUSDT: mean_reversion -> no signal
+2025-08-15 14:11:10,524 - __main__ - INFO - BTCUSDT: rsi_strategy -> no signal
+2025-08-15 14:11:10,735 - __main__ - INFO - BTCUSDT: half_year_strategy -> no signal
+2025-08-15 14:11:10,952 - __main__ - INFO - ETHUSDT: sma_crossover -> Buy SL=4041.92 TP=4467.38
+2025-08-15 14:11:11,368 - __main__ - ERROR - ETHUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:11:11,570 - __main__ - INFO - ETHUSDT: breakout -> Sell SL=4467.38 TP=4041.92
+2025-08-15 14:11:11,790 - __main__ - ERROR - ETHUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:11:11,998 - __main__ - INFO - ETHUSDT: mean_reversion -> no signal
+2025-08-15 14:11:12,206 - __main__ - INFO - ETHUSDT: rsi_strategy -> no signal
+2025-08-15 14:11:12,413 - __main__ - INFO - ETHUSDT: half_year_strategy -> no signal
+2025-08-15 14:11:12,618 - __main__ - INFO - SOLUSDT: sma_crossover -> Buy SL=9887.22 TP=10927.98
+2025-08-15 14:11:13,385 - __main__ - ERROR - SOLUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:11:13,593 - __main__ - INFO - SOLUSDT: breakout -> Buy SL=9982.32 TP=11033.09
+2025-08-15 14:11:13,800 - __main__ - ERROR - SOLUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:11:14,013 - __main__ - INFO - SOLUSDT: mean_reversion -> no signal
+2025-08-15 14:11:14,226 - __main__ - INFO - SOLUSDT: rsi_strategy -> no signal
+2025-08-15 14:11:14,440 - __main__ - INFO - SOLUSDT: half_year_strategy -> no signal
+2025-08-15 14:11:14,656 - __main__ - INFO - XRPUSDT: sma_crossover -> Buy SL=335607.45 TP=370934.55
+2025-08-15 14:11:15,077 - __main__ - ERROR - XRPUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:11:15,660 - __main__ - INFO - XRPUSDT: breakout -> Buy SL=336362.70 TP=371769.30
+2025-08-15 14:11:15,870 - __main__ - ERROR - XRPUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:11:16,079 - __main__ - INFO - XRPUSDT: mean_reversion -> no signal
+2025-08-15 14:11:16,288 - __main__ - INFO - XRPUSDT: rsi_strategy -> no signal
+2025-08-15 14:11:17,023 - __main__ - INFO - XRPUSDT: half_year_strategy -> no signal
+2025-08-15 14:11:17,233 - __main__ - INFO - DOGEUSDT: sma_crossover -> Buy SL=3498770.20 TP=3867061.80
+2025-08-15 14:11:17,653 - __main__ - ERROR - DOGEUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:11:17,860 - __main__ - INFO - DOGEUSDT: breakout -> Buy SL=3511022.35 TP=3880603.65
+2025-08-15 14:11:18,071 - __main__ - ERROR - DOGEUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:11:18,289 - __main__ - INFO - DOGEUSDT: mean_reversion -> no signal
+2025-08-15 14:11:18,498 - __main__ - INFO - DOGEUSDT: rsi_strategy -> no signal
+2025-08-15 14:11:19,240 - __main__ - INFO - DOGEUSDT: half_year_strategy -> no signal
+2025-08-15 14:11:19,455 - __main__ - INFO - BNBUSDT: sma_crossover -> Buy SL=144.79 TP=160.03
+2025-08-15 14:11:20,225 - __main__ - ERROR - BNBUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:11:20,430 - __main__ - INFO - BNBUSDT: breakout -> Sell SL=160.03 TP=144.79
+2025-08-15 14:11:20,636 - __main__ - ERROR - BNBUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:11:21,195 - __main__ - INFO - BNBUSDT: mean_reversion -> no signal
+2025-08-15 14:11:21,402 - __main__ - INFO - BNBUSDT: rsi_strategy -> no signal
+2025-08-15 14:11:21,609 - __main__ - INFO - BNBUSDT: half_year_strategy -> no signal
+2025-08-15 14:12:21,841 - __main__ - INFO - BTCUSDT: actively sold, price decreases (start=118945.10, end=117848.00)
+2025-08-15 14:12:22,049 - __main__ - INFO - ETHUSDT: actively sold, price decreases (start=4638.48, end=4552.09)
+2025-08-15 14:12:22,257 - __main__ - INFO - SOLUSDT: actively sold, price decreases (start=195.33, end=190.50)
+2025-08-15 14:12:22,464 - __main__ - INFO - XRPUSDT: actively sold, price decreases (start=3.11, end=3.09)
+2025-08-15 14:12:22,685 - __main__ - INFO - DOGEUSDT: actively sold, price decreases (start=0.23, end=0.23)
+2025-08-15 14:12:22,896 - __main__ - INFO - BNBUSDT: actively sold, price decreases (start=844.90, end=833.20)
+2025-08-15 14:12:23,105 - __main__ - INFO - BTCUSDT: sma_crossover -> Buy SL=186.37 TP=205.98
+2025-08-15 14:12:23,315 - __main__ - ERROR - BTCUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:12:23,525 - __main__ - INFO - BTCUSDT: breakout -> Sell SL=207.81 TP=188.02
+2025-08-15 14:12:23,732 - __main__ - ERROR - BTCUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:12:23,941 - __main__ - INFO - BTCUSDT: mean_reversion -> no signal
+2025-08-15 14:12:24,147 - __main__ - INFO - BTCUSDT: rsi_strategy -> no signal
+2025-08-15 14:12:24,357 - __main__ - INFO - BTCUSDT: half_year_strategy -> no signal
+2025-08-15 14:12:24,576 - __main__ - INFO - ETHUSDT: sma_crossover -> Buy SL=7829.26 TP=8653.40
+2025-08-15 14:12:24,784 - __main__ - ERROR - ETHUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:12:24,994 - __main__ - INFO - ETHUSDT: breakout -> Buy SL=7866.31 TP=8694.35
+2025-08-15 14:12:25,200 - __main__ - ERROR - ETHUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:12:25,407 - __main__ - INFO - ETHUSDT: mean_reversion -> no signal
+2025-08-15 14:12:25,623 - __main__ - INFO - ETHUSDT: rsi_strategy -> no signal
+2025-08-15 14:12:25,832 - __main__ - INFO - ETHUSDT: half_year_strategy -> no signal
+2025-08-15 14:12:26,040 - __main__ - INFO - SOLUSDT: sma_crossover -> Buy SL=24893.80 TP=27514.20
+2025-08-15 14:12:26,247 - __main__ - ERROR - SOLUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:12:26,454 - __main__ - INFO - SOLUSDT: breakout -> Buy SL=24893.80 TP=27514.20
+2025-08-15 14:12:26,663 - __main__ - ERROR - SOLUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:12:26,870 - __main__ - INFO - SOLUSDT: mean_reversion -> no signal
+2025-08-15 14:12:27,078 - __main__ - INFO - SOLUSDT: rsi_strategy -> no signal
+2025-08-15 14:12:27,288 - __main__ - INFO - SOLUSDT: half_year_strategy -> no signal
+2025-08-15 14:12:27,495 - __main__ - INFO - XRPUSDT: sma_crossover -> Buy SL=796651.95 TP=880510.05
+2025-08-15 14:12:27,703 - __main__ - ERROR - XRPUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:12:27,911 - __main__ - INFO - XRPUSDT: breakout -> Buy SL=813923.90 TP=899600.10
+2025-08-15 14:12:28,119 - __main__ - ERROR - XRPUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:12:28,329 - __main__ - INFO - XRPUSDT: mean_reversion -> no signal
+2025-08-15 14:12:28,545 - __main__ - INFO - XRPUSDT: rsi_strategy -> no signal
+2025-08-15 14:12:28,760 - __main__ - INFO - XRPUSDT: half_year_strategy -> no signal
+2025-08-15 14:12:28,968 - __main__ - INFO - DOGEUSDT: sma_crossover -> Buy SL=7830413.95 TP=8654668.05
+2025-08-15 14:12:29,181 - __main__ - ERROR - DOGEUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:12:29,397 - __main__ - INFO - DOGEUSDT: breakout -> Buy SL=7832495.40 TP=8656968.60
+2025-08-15 14:12:29,606 - __main__ - ERROR - DOGEUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:12:29,813 - __main__ - INFO - DOGEUSDT: mean_reversion -> no signal
+2025-08-15 14:12:30,021 - __main__ - INFO - DOGEUSDT: rsi_strategy -> no signal
+2025-08-15 14:12:30,229 - __main__ - INFO - DOGEUSDT: half_year_strategy -> no signal
+2025-08-15 14:12:30,436 - __main__ - INFO - BNBUSDT: sma_crossover -> Buy SL=218.60 TP=241.62
+2025-08-15 14:12:30,648 - __main__ - ERROR - BNBUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:12:30,854 - __main__ - INFO - BNBUSDT: breakout -> Sell SL=241.62 TP=218.60
+2025-08-15 14:12:31,062 - __main__ - ERROR - BNBUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:12:31,270 - __main__ - INFO - BNBUSDT: mean_reversion -> no signal
+2025-08-15 14:12:31,477 - __main__ - INFO - BNBUSDT: rsi_strategy -> no signal
+2025-08-15 14:12:31,689 - __main__ - INFO - BNBUSDT: half_year_strategy -> no signal
+2025-08-15 14:13:31,948 - __main__ - INFO - BTCUSDT: actively sold, price decreases (start=118945.10, end=118024.20)
+2025-08-15 14:13:32,156 - __main__ - INFO - ETHUSDT: actively sold, price decreases (start=4638.48, end=4560.68)
+2025-08-15 14:13:32,364 - __main__ - INFO - SOLUSDT: actively sold, price decreases (start=195.33, end=190.98)
+2025-08-15 14:13:32,569 - __main__ - INFO - XRPUSDT: actively sold, price decreases (start=3.11, end=3.09)
+2025-08-15 14:13:32,781 - __main__ - INFO - DOGEUSDT: actively sold, price decreases (start=0.23, end=0.23)
+2025-08-15 14:13:32,988 - __main__ - INFO - BNBUSDT: actively sold, price decreases (start=844.90, end=834.30)
+2025-08-15 14:13:33,195 - __main__ - INFO - BTCUSDT: sma_crossover -> Buy SL=256.53 TP=283.54
+2025-08-15 14:13:33,403 - __main__ - ERROR - BTCUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:13:33,614 - __main__ - INFO - BTCUSDT: breakout -> Sell SL=283.78 TP=256.75
+2025-08-15 14:13:33,822 - __main__ - ERROR - BTCUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:13:34,031 - __main__ - INFO - BTCUSDT: mean_reversion -> no signal
+2025-08-15 14:13:34,239 - __main__ - INFO - BTCUSDT: rsi_strategy -> no signal
+2025-08-15 14:13:34,450 - __main__ - INFO - BTCUSDT: half_year_strategy -> no signal
+2025-08-15 14:13:34,657 - __main__ - INFO - ETHUSDT: sma_crossover -> Buy SL=9092.13 TP=10049.19
+2025-08-15 14:13:34,871 - __main__ - ERROR - ETHUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:13:35,079 - __main__ - INFO - ETHUSDT: breakout -> Buy SL=9092.13 TP=10049.19
+2025-08-15 14:13:35,290 - __main__ - ERROR - ETHUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:13:35,498 - __main__ - INFO - ETHUSDT: mean_reversion -> no signal
+2025-08-15 14:13:35,704 - __main__ - INFO - ETHUSDT: rsi_strategy -> no signal
+2025-08-15 14:13:35,916 - __main__ - INFO - ETHUSDT: half_year_strategy -> no signal
+2025-08-15 14:13:36,125 - __main__ - INFO - SOLUSDT: sma_crossover -> Buy SL=30308.61 TP=33498.99
+2025-08-15 14:13:36,332 - __main__ - ERROR - SOLUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:13:36,539 - __main__ - INFO - SOLUSDT: breakout -> Buy SL=30308.61 TP=33498.99
+2025-08-15 14:13:36,746 - __main__ - ERROR - SOLUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:13:36,954 - __main__ - INFO - SOLUSDT: mean_reversion -> no signal
+2025-08-15 14:13:37,161 - __main__ - INFO - SOLUSDT: rsi_strategy -> no signal
+2025-08-15 14:13:37,370 - __main__ - INFO - SOLUSDT: half_year_strategy -> no signal
+2025-08-15 14:13:37,578 - __main__ - INFO - XRPUSDT: sma_crossover -> Buy SL=953986.20 TP=1054405.80
+2025-08-15 14:13:37,788 - __main__ - ERROR - XRPUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:13:37,997 - __main__ - INFO - XRPUSDT: breakout -> Buy SL=953990.00 TP=1054410.00
+2025-08-15 14:13:38,208 - __main__ - ERROR - XRPUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:13:38,776 - __main__ - INFO - XRPUSDT: mean_reversion -> no signal
+2025-08-15 14:13:38,985 - __main__ - INFO - XRPUSDT: rsi_strategy -> no signal
+2025-08-15 14:13:39,194 - __main__ - INFO - XRPUSDT: half_year_strategy -> no signal
+2025-08-15 14:13:39,405 - __main__ - INFO - DOGEUSDT: sma_crossover -> Buy SL=10334457.20 TP=11422294.80
+2025-08-15 14:13:39,612 - __main__ - ERROR - DOGEUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:13:40,175 - __main__ - INFO - DOGEUSDT: breakout -> Buy SL=10334457.20 TP=11422294.80
+2025-08-15 14:13:40,388 - __main__ - ERROR - DOGEUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:13:40,597 - __main__ - INFO - DOGEUSDT: mean_reversion -> no signal
+2025-08-15 14:13:40,804 - __main__ - INFO - DOGEUSDT: rsi_strategy -> no signal
+2025-08-15 14:13:41,013 - __main__ - INFO - DOGEUSDT: half_year_strategy -> no signal
+2025-08-15 14:13:41,222 - __main__ - INFO - BNBUSDT: sma_crossover -> Buy SL=245.86 TP=271.74
+2025-08-15 14:13:41,434 - __main__ - ERROR - BNBUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:13:41,647 - __main__ - INFO - BNBUSDT: breakout -> Sell SL=271.74 TP=245.86
+2025-08-15 14:13:41,853 - __main__ - ERROR - BNBUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:13:42,064 - __main__ - INFO - BNBUSDT: mean_reversion -> no signal
+2025-08-15 14:13:42,272 - __main__ - INFO - BNBUSDT: rsi_strategy -> no signal
+2025-08-15 14:13:42,481 - __main__ - INFO - BNBUSDT: half_year_strategy -> no signal
+2025-08-15 14:14:42,748 - __main__ - INFO - BTCUSDT: actively sold, price decreases (start=118945.10, end=117991.90)
+2025-08-15 14:14:42,956 - __main__ - INFO - ETHUSDT: actively sold, price decreases (start=4638.48, end=4559.78)
+2025-08-15 14:14:43,164 - __main__ - INFO - SOLUSDT: actively sold, price decreases (start=195.33, end=190.90)
+2025-08-15 14:14:43,373 - __main__ - INFO - XRPUSDT: actively sold, price decreases (start=3.11, end=3.09)
+2025-08-15 14:14:43,585 - __main__ - INFO - DOGEUSDT: actively sold, price decreases (start=0.23, end=0.23)
+2025-08-15 14:14:43,796 - __main__ - INFO - BNBUSDT: actively sold, price decreases (start=844.90, end=833.90)
+2025-08-15 14:14:44,003 - __main__ - INFO - BTCUSDT: sma_crossover -> Buy SL=297.18 TP=328.47
+2025-08-15 14:14:44,211 - __main__ - ERROR - BTCUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:14:44,442 - __main__ - INFO - BTCUSDT: breakout -> Sell SL=328.47 TP=297.19
+2025-08-15 14:14:44,649 - __main__ - ERROR - BTCUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:14:44,855 - __main__ - INFO - BTCUSDT: mean_reversion -> no signal
+2025-08-15 14:14:45,064 - __main__ - INFO - BTCUSDT: rsi_strategy -> no signal
+2025-08-15 14:14:45,274 - __main__ - INFO - BTCUSDT: half_year_strategy -> no signal
+2025-08-15 14:14:45,485 - __main__ - INFO - ETHUSDT: sma_crossover -> Buy SL=10340.45 TP=11428.91
+2025-08-15 14:14:45,693 - __main__ - ERROR - ETHUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:14:45,902 - __main__ - INFO - ETHUSDT: breakout -> Buy SL=10344.31 TP=11433.19
+2025-08-15 14:14:46,113 - __main__ - ERROR - ETHUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:14:46,320 - __main__ - INFO - ETHUSDT: mean_reversion -> no signal
+2025-08-15 14:14:46,527 - __main__ - INFO - ETHUSDT: rsi_strategy -> no signal
+2025-08-15 14:14:46,743 - __main__ - INFO - ETHUSDT: half_year_strategy -> no signal
+2025-08-15 14:14:46,951 - __main__ - INFO - SOLUSDT: sma_crossover -> Buy SL=39480.01 TP=43635.79
+2025-08-15 14:14:47,161 - __main__ - ERROR - SOLUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:14:47,368 - __main__ - INFO - SOLUSDT: breakout -> Buy SL=39480.01 TP=43635.79
+2025-08-15 14:14:47,575 - __main__ - ERROR - SOLUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:14:47,800 - __main__ - INFO - SOLUSDT: mean_reversion -> no signal
+2025-08-15 14:14:48,008 - __main__ - INFO - SOLUSDT: rsi_strategy -> no signal
+2025-08-15 14:14:48,216 - __main__ - INFO - SOLUSDT: half_year_strategy -> no signal
+2025-08-15 14:14:48,423 - __main__ - INFO - XRPUSDT: sma_crossover -> Buy SL=1044231.45 TP=1154150.55
+2025-08-15 14:14:48,631 - __main__ - ERROR - XRPUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:14:48,850 - __main__ - INFO - XRPUSDT: breakout -> Buy SL=1044231.45 TP=1154150.55
+2025-08-15 14:14:49,055 - __main__ - ERROR - XRPUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:14:49,264 - __main__ - INFO - XRPUSDT: mean_reversion -> no signal
+2025-08-15 14:14:49,471 - __main__ - INFO - XRPUSDT: rsi_strategy -> no signal
+2025-08-15 14:14:49,679 - __main__ - INFO - XRPUSDT: half_year_strategy -> no signal
+2025-08-15 14:14:49,888 - __main__ - INFO - DOGEUSDT: sma_crossover -> Buy SL=10917448.45 TP=12066653.55
+2025-08-15 14:14:50,095 - __main__ - ERROR - DOGEUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:14:50,302 - __main__ - INFO - DOGEUSDT: breakout -> Buy SL=10917448.45 TP=12066653.55
+2025-08-15 14:14:50,513 - __main__ - ERROR - DOGEUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:14:50,720 - __main__ - INFO - DOGEUSDT: mean_reversion -> no signal
+2025-08-15 14:14:50,928 - __main__ - INFO - DOGEUSDT: rsi_strategy -> no signal
+2025-08-15 14:14:51,152 - __main__ - INFO - DOGEUSDT: half_year_strategy -> no signal
+2025-08-15 14:14:51,359 - __main__ - INFO - BNBUSDT: sma_crossover -> Buy SL=272.83 TP=301.55
+2025-08-15 14:14:51,570 - __main__ - ERROR - BNBUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:14:51,779 - __main__ - INFO - BNBUSDT: breakout -> Sell SL=301.55 TP=272.83
+2025-08-15 14:14:51,986 - __main__ - ERROR - BNBUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:14:52,193 - __main__ - INFO - BNBUSDT: mean_reversion -> no signal
+2025-08-15 14:14:52,401 - __main__ - INFO - BNBUSDT: rsi_strategy -> no signal
+2025-08-15 14:14:53,143 - __main__ - INFO - BNBUSDT: half_year_strategy -> no signal
+2025-08-15 14:15:53,383 - __main__ - INFO - BTCUSDT: actively sold, price decreases (start=118834.90, end=118160.00)
+2025-08-15 14:15:53,590 - __main__ - INFO - ETHUSDT: actively sold, price decreases (start=4633.12, end=4567.00)
+2025-08-15 14:15:53,796 - __main__ - INFO - SOLUSDT: actively sold, price decreases (start=195.01, end=191.34)
+2025-08-15 14:15:54,004 - __main__ - INFO - XRPUSDT: actively sold, price decreases (start=3.11, end=3.10)
+2025-08-15 14:15:54,213 - __main__ - INFO - DOGEUSDT: actively sold, price decreases (start=0.23, end=0.23)
+2025-08-15 14:15:54,419 - __main__ - INFO - BNBUSDT: actively sold, price decreases (start=842.20, end=835.50)
+2025-08-15 14:15:54,629 - __main__ - INFO - BTCUSDT: sma_crossover -> Buy SL=57.49 TP=63.54
+2025-08-15 14:15:54,838 - __main__ - ERROR - BTCUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:15:55,045 - __main__ - INFO - BTCUSDT: breakout -> Sell SL=63.54 TP=57.49
+2025-08-15 14:15:55,252 - __main__ - ERROR - BTCUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:15:55,459 - __main__ - INFO - BTCUSDT: mean_reversion -> no signal
+2025-08-15 14:15:55,667 - __main__ - INFO - BTCUSDT: rsi_strategy -> no signal
+2025-08-15 14:15:55,877 - __main__ - INFO - BTCUSDT: half_year_strategy -> no signal
+2025-08-15 14:15:56,091 - __main__ - INFO - ETHUSDT: sma_crossover -> Buy SL=2402.08 TP=2654.94
+2025-08-15 14:15:56,298 - __main__ - ERROR - ETHUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:15:56,505 - __main__ - INFO - ETHUSDT: breakout -> Sell SL=2654.94 TP=2402.08
+2025-08-15 14:15:56,713 - __main__ - ERROR - ETHUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:15:56,920 - __main__ - INFO - ETHUSDT: mean_reversion -> no signal
+2025-08-15 14:15:57,127 - __main__ - INFO - ETHUSDT: rsi_strategy -> no signal
+2025-08-15 14:15:57,337 - __main__ - INFO - ETHUSDT: half_year_strategy -> no signal
+2025-08-15 14:15:57,543 - __main__ - INFO - SOLUSDT: sma_crossover -> Buy SL=13235.12 TP=14628.28
+2025-08-15 14:15:57,751 - __main__ - ERROR - SOLUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:15:57,963 - __main__ - INFO - SOLUSDT: breakout -> Buy SL=13239.87 TP=14633.53
+2025-08-15 14:15:58,171 - __main__ - ERROR - SOLUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:15:58,381 - __main__ - INFO - SOLUSDT: mean_reversion -> no signal
+2025-08-15 14:15:58,588 - __main__ - INFO - SOLUSDT: rsi_strategy -> no signal
+2025-08-15 14:15:58,797 - __main__ - INFO - SOLUSDT: half_year_strategy -> no signal
+2025-08-15 14:15:59,358 - __main__ - INFO - XRPUSDT: sma_crossover -> Sell SL=253640.10 TP=229483.90
+2025-08-15 14:15:59,921 - __main__ - ERROR - XRPUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:16:00,128 - __main__ - INFO - XRPUSDT: breakout -> Buy SL=229483.90 TP=253640.10
+2025-08-15 14:16:00,335 - __main__ - ERROR - XRPUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:16:00,544 - __main__ - INFO - XRPUSDT: mean_reversion -> no signal
+2025-08-15 14:16:00,755 - __main__ - INFO - XRPUSDT: rsi_strategy -> no signal
+2025-08-15 14:16:00,980 - __main__ - INFO - XRPUSDT: half_year_strategy -> no signal
+2025-08-15 14:16:01,549 - __main__ - INFO - DOGEUSDT: sma_crossover -> Buy SL=1098550.55 TP=1214187.45
+2025-08-15 14:16:01,756 - __main__ - ERROR - DOGEUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:16:01,966 - __main__ - INFO - DOGEUSDT: breakout -> Buy SL=1098550.55 TP=1214187.45
+2025-08-15 14:16:02,174 - __main__ - ERROR - DOGEUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:16:02,382 - __main__ - INFO - DOGEUSDT: mean_reversion -> no signal
+2025-08-15 14:16:02,590 - __main__ - INFO - DOGEUSDT: rsi_strategy -> no signal
+2025-08-15 14:16:03,328 - __main__ - INFO - DOGEUSDT: half_year_strategy -> no signal
+2025-08-15 14:16:03,546 - __main__ - INFO - BNBUSDT: sma_crossover -> Buy SL=191.42 TP=211.56
+2025-08-15 14:16:03,755 - __main__ - ERROR - BNBUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:16:03,965 - __main__ - INFO - BNBUSDT: breakout -> Sell SL=211.56 TP=191.42
+2025-08-15 14:16:04,172 - __main__ - ERROR - BNBUSDT: trade failed: Invalid SL/TP levels
+2025-08-15 14:16:04,381 - __main__ - INFO - BNBUSDT: mean_reversion -> no signal
+2025-08-15 14:16:04,590 - __main__ - INFO - BNBUSDT: rsi_strategy -> no signal
+2025-08-15 14:16:04,802 - __main__ - INFO - BNBUSDT: half_year_strategy -> no signal
