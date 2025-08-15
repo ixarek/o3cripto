@@ -361,10 +361,14 @@ class BybitTradingBot:
         )
         candles = result.get("result", {}).get("list", [])
         if len(candles) < limit:
-            logger.warning(f"{symbol}: not enough kline data for {strategy.__name__}")
+            logger.warning(
+                f"{symbol}: not enough kline data for {strategy.__name__}"
+            )
             return None
-        candles = [list(map(float, c[1:6])) for c in reversed(candles)]
-        price = candles[-1][3]
+
+        candles = [list(map(float, c[:6])) for c in reversed(candles)]
+        price = candles[-1][4]
+
         signal, stop, take = strategy(candles)
         if signal == "Hold":
             logger.info(f"{symbol}: {strategy.__name__} -> no signal")

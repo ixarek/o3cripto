@@ -210,6 +210,21 @@ class TestBybitTradingBot(unittest.TestCase):
         self.bot.place_order.assert_not_called()
         self.assertIn("no trade signal", cm.output[0])
 
+    def test_trade_strategy_passes_price(self):
+        candles = [[0, 100, 101, 99, 100, 0]] * 50
+        self.session.get_kline.return_value = {"result": {"list": candles}}
+
+        def dummy_strategy(cs):
+            assert len(cs[0]) == 6
+            price = cs[-1][4]
+            return "Buy", price - 1, price + 1
+
+        self.bot.place_order = MagicMock()
+        self.bot.trade_strategy("BTCUSDT", 100, 10, dummy_strategy)
+        self.bot.place_order.assert_called_once_with(
+            "BTCUSDT", "Buy", 100, 10, 99, 101, 100
+        )
+
     def test_recent_trades_calls_api(self):
         self.session.get_executions.return_value = {"result": {"list": [{"a": 1}]}}
         trades = self.bot.recent_trades("BTCUSDT")
