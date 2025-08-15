@@ -20,7 +20,13 @@ class TestBybitTradingBot(unittest.TestCase):
         self.session.get_instruments_info.return_value = {
             "result": {
                 "list": [
-                    {"lotSizeFilter": {"qtyStep": "0.001", "minOrderQty": "0.001"}}
+                    {
+                        "lotSizeFilter": {
+                            "qtyStep": "0.001",
+                            "minOrderQty": "0.001",
+                        },
+                        "priceFilter": {"tickSize": "0.5"},
+                    }
                 ]
             }
         }
@@ -47,8 +53,8 @@ class TestBybitTradingBot(unittest.TestCase):
         self.assertEqual(kwargs["side"], "Buy")
         self.assertEqual(kwargs["orderType"], "Market")
         self.assertEqual(kwargs["timeInForce"], "ImmediateOrCancel")
-        self.assertEqual(kwargs["stopLoss"], "95")
-        self.assertEqual(kwargs["takeProfit"], "105")
+        self.assertAlmostEqual(float(kwargs["stopLoss"]), 95.0)
+        self.assertAlmostEqual(float(kwargs["takeProfit"]), 105.0)
         self.assertEqual(kwargs["tpslMode"], "Partial")
         self.assertAlmostEqual(float(kwargs["qty"]), 10.0)
 
@@ -243,6 +249,13 @@ class TestBybitTradingBot(unittest.TestCase):
     def test_place_order_invalid_sl_tp_sell(self):
         with self.assertRaises(ValueError):
             self.bot.place_order("BTCUSDT", "Sell", 100, 10, 95, 105)
+
+    def test_sl_tp_rounded_to_tick(self):
+        self.session.place_order.reset_mock()
+        self.bot.place_order("BTCUSDT", "Buy", 100, 10, 94.23, 105.87)
+        _, kwargs = self.session.place_order.call_args
+        self.assertEqual(kwargs["stopLoss"], "94.0")
+        self.assertEqual(kwargs["takeProfit"], "106.0")
 
     def test_last_price_no_data(self):
         self.session.get_tickers.return_value = {"result": {"list": [{}]}}

@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 from typing import Optional, Callable
 from functools import lru_cache
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 import time
 
 from functions import (
@@ -63,7 +63,7 @@ class BybitTradingBot:
             raise ValueError("Position value must be between 800 and 1200 USD")
 
     def _last_price(self, symbol: str) -> float:
-        """Return last traded price for symbol."""
+        """Return last traded price for ``symbol``."""
         result = self.session.get_tickers(category="linear", symbol=symbol)
         price = (
             result.get("result", {})
@@ -75,17 +75,24 @@ class BybitTradingBot:
         return float(price)
 
     @lru_cache(maxsize=None)
-    def _lot_step(self, symbol: str) -> tuple[float, float]:
-        """Return quantity step and minimum order size for symbol."""
+    def _instrument_info(self, symbol: str) -> dict:
+        """Return instrument info used for lot and price steps."""
         result = self.session.get_instruments_info(
             category="linear", symbol=symbol
         )
-        info = result.get("result", {}).get("list", [{}])[0].get(
-            "lotSizeFilter", {}
-        )
+        return result.get("result", {}).get("list", [{}])[0]
+
+    def _lot_step(self, symbol: str) -> tuple[float, float]:
+        """Return quantity step and minimum order size for symbol."""
+        info = self._instrument_info(symbol).get("lotSizeFilter", {})
         step = float(info.get("qtyStep", 1))
         min_qty = float(info.get("minOrderQty", step))
         return step, min_qty
+
+    def _price_tick(self, symbol: str) -> float:
+        """Return price tick size for ``symbol``."""
+        info = self._instrument_info(symbol).get("priceFilter", {})
+        return float(info.get("tickSize", 0.01))
 
     def _format_qty(self, symbol: str, qty: float) -> float:
         """Round quantity to exchange step size."""
@@ -97,6 +104,12 @@ class BybitTradingBot:
         if adjusted < d_min:
             adjusted = d_min
         return float(adjusted)
+
+    def _format_price(self, symbol: str, price: float) -> float:
+        """Round ``price`` to the instrument's tick size."""
+        tick = Decimal(str(self._price_tick(symbol)))
+        d_price = Decimal(str(price))
+        return float((d_price / tick).quantize(Decimal("1"), rounding=ROUND_HALF_UP) * tick)
 
     def _set_leverage(self, symbol: str, leverage: int) -> None:
         """Safely set leverage ignoring non-modification errors."""
@@ -159,6 +172,8 @@ class BybitTradingBot:
             raise ValueError("Stop loss and take profit required")
         self._validate(symbol, amount, leverage)
         price = self._last_price(symbol)
+        stop_loss = self._format_price(symbol, stop_loss)
+        take_profit = self._format_price(symbol, take_profit)
         if side == "Buy" and not (stop_loss < price < take_profit):
             raise ValueError("Invalid SL/TP levels")
         if side == "Sell" and not (take_profit < price < stop_loss):
